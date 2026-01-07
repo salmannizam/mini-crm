@@ -111,6 +111,7 @@ async function handlePost(req: NextRequest, user: any) {
     description: `Lead created by ${user.name}`,
     performedBy: user._id,
     performedByName: user.name,
+    createdAt: new Date(),
   });
 
   await lead.save();

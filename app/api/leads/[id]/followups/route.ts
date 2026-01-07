@@ -35,6 +35,7 @@ async function handlePost(
     time: validatedData.time,
     comment: validatedData.comment,
     createdBy: user._id,
+    createdAt: new Date(),
   });
 
   lead.activityLogs.push({
@@ -42,6 +43,7 @@ async function handlePost(
     description: `Follow-up scheduled by ${user.name}`,
     performedBy: user._id,
     performedByName: user.name,
+    createdAt: new Date(),
   });
 
   await lead.save();

@@ -70,6 +70,7 @@ async function handlePatch(
       description: `Status changed from ${oldStatus} to ${validatedData.status} by ${user.name}`,
       performedBy: user._id,
       performedByName: user.name,
+      createdAt: new Date(),
     });
   }
 
@@ -85,6 +86,7 @@ async function handlePatch(
       description: `Lead reassigned from previous user to ${newUser?.name || "unknown"} by ${user.name}`,
       performedBy: user._id,
       performedByName: user.name,
+      createdAt: new Date(),
     });
   }
 

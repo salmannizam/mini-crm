@@ -35,6 +35,7 @@ async function handlePost(
     author: user._id,
     authorName: user.name,
     authorRole: user.role,
+    createdAt: new Date(),
   });
 
   lead.activityLogs.push({
@@ -42,6 +43,7 @@ async function handlePost(
     description: `Comment added by ${user.name}`,
     performedBy: user._id,
     performedByName: user.name,
+    createdAt: new Date(),
   });
 
   await lead.save();
