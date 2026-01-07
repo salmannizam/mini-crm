@@ -18,6 +18,62 @@ async function handleGet(req: NextRequest, user: any) {
     
     const manageableUsers = await getManageableUsers(user._id.toString());
     
+    // For Admin, get detailed leads by status per user
+    let leadsByStatusPerUser: any[] = [];
+    if (user.role === UserRole.ADMIN) {
+      leadsByStatusPerUser = await Lead.aggregate([
+        { 
+          $match: { 
+            isDeleted: false 
+          } 
+        },
+        {
+          $group: {
+            _id: {
+              assignedUser: "$assignedUser",
+              status: "$status",
+            },
+            count: { $sum: 1 },
+          },
+        },
+        {
+          $lookup: {
+            from: "users",
+            localField: "_id.assignedUser",
+            foreignField: "_id",
+            as: "user",
+          },
+        },
+        { $unwind: "$user" },
+        {
+          $group: {
+            _id: "$_id.assignedUser",
+            userName: { $first: "$user.name" },
+            userEmail: { $first: "$user.email" },
+            userRole: { $first: "$user.role" },
+            statuses: {
+              $push: {
+                status: "$_id.status",
+                count: "$count",
+              },
+            },
+            totalLeads: { $sum: "$count" },
+          },
+        },
+        {
+          $project: {
+            userId: "$_id",
+            userName: 1,
+            userEmail: 1,
+            userRole: 1,
+            totalLeads: 1,
+            statuses: 1,
+          },
+        },
+        { $sort: { totalLeads: -1 } },
+      ]);
+    }
+    
     const [
       totalLeads,
       leadsByStatus,
@@ -110,6 +166,7 @@ async function handleGet(req: NextRequest, user: any) {
         email: u.email,
         role: u.role,
       })),
+      leadsByStatusPerUser: user.role === UserRole.ADMIN ? leadsByStatusPerUser : undefined,
     });
   } else {
     const today = dayjs().startOf("day").toDate();

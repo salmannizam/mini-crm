@@ -25,6 +25,14 @@ interface DashboardData {
     assignedUser: { name: string; email: string };
     createdBy: { name: string; email: string };
   }>;
+  leadsByStatusPerUser?: Array<{
+    userId: string;
+    userName: string;
+    userEmail: string;
+    userRole: string;
+    totalLeads: number;
+    statuses: Array<{ status: string; count: number }>;
+  }>;
 }
 
 export function AdminDashboard() {
@@ -138,6 +146,66 @@ export function AdminDashboard() {
           </CardContent>
         </Card>
       </div>
+
+      {data.leadsByStatusPerUser && (
+        <Card>
+          <CardHeader>
+            <CardTitle>Leads by Status per User</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="overflow-x-auto">
+              <table className="w-full border-collapse">
+                <thead>
+                  <tr className="border-b border-gray-200 dark:border-gray-800">
+                    <th className="px-4 py-3 text-left text-sm font-semibold text-gray-900 dark:text-gray-100">User</th>
+                    <th className="px-4 py-3 text-left text-sm font-semibold text-gray-900 dark:text-gray-100">Role</th>
+                    <th className="px-4 py-3 text-center text-sm font-semibold text-gray-900 dark:text-gray-100">Total</th>
+                    <th className="px-4 py-3 text-center text-sm font-semibold text-gray-900 dark:text-gray-100">New</th>
+                    <th className="px-4 py-3 text-center text-sm font-semibold text-gray-900 dark:text-gray-100">Contacted</th>
+                    <th className="px-4 py-3 text-center text-sm font-semibold text-gray-900 dark:text-gray-100">Follow-up</th>
+                    <th className="px-4 py-3 text-center text-sm font-semibold text-gray-900 dark:text-gray-100">Converted</th>
+                    <th className="px-4 py-3 text-center text-sm font-semibold text-gray-900 dark:text-gray-100">Lost</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {data.leadsByStatusPerUser.map((user) => {
+                    const statusMap: Record<string, number> = {};
+                    user.statuses.forEach((s) => {
+                      statusMap[s.status] = s.count;
+                    });
+                    return (
+                      <tr
+                        key={user.userId}
+                        className="border-b border-gray-100 dark:border-gray-800 hover:bg-gray-50 dark:hover:bg-gray-800/50"
+                      >
+                        <td className="px-4 py-3">
+                          <div>
+                            <p className="font-medium text-sm text-gray-900 dark:text-gray-100">{user.userName}</p>
+                            <p className="text-xs text-gray-500 dark:text-gray-400">{user.userEmail}</p>
+                          </div>
+                        </td>
+                        <td className="px-4 py-3 text-sm text-gray-600 dark:text-gray-300 capitalize">
+                          {user.userRole.replace("-", " ")}
+                        </td>
+                        <td className="px-4 py-3 text-center font-semibold">{user.totalLeads}</td>
+                        <td className="px-4 py-3 text-center">{statusMap["new"] || 0}</td>
+                        <td className="px-4 py-3 text-center">{statusMap["contacted"] || 0}</td>
+                        <td className="px-4 py-3 text-center">{statusMap["follow-up"] || 0}</td>
+                        <td className="px-4 py-3 text-center text-green-600 dark:text-green-400">
+                          {statusMap["converted"] || 0}
+                        </td>
+                        <td className="px-4 py-3 text-center text-red-600 dark:text-red-400">
+                          {statusMap["lost"] || 0}
+                        </td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+            </div>
+          </CardContent>
+        </Card>
+      )}
 
       <Card>
         <CardHeader>

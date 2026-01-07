@@ -9,6 +9,7 @@ import {
   LogOut,
   User,
   X,
+  BarChart3,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { UserRole } from "@/lib/constants";
@@ -36,6 +37,16 @@ export function Sidebar({ userRole, userName }: SidebarProps) {
       icon: FileText,
       roles: [UserRole.ADMIN, UserRole.MANAGER, UserRole.TEAM_LEADER, UserRole.USER],
     },
+    ...([UserRole.MANAGER, UserRole.TEAM_LEADER].includes(userRole as UserRole)
+      ? [
+          {
+            title: "Reports",
+            href: "/reports",
+            icon: BarChart3,
+            roles: [UserRole.MANAGER, UserRole.TEAM_LEADER],
+          },
+        ]
+      : []),
     ...([UserRole.ADMIN, UserRole.MANAGER, UserRole.TEAM_LEADER].includes(userRole as UserRole)
       ? [
           {
