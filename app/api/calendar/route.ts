@@ -5,7 +5,12 @@ import { requireAuth } from "@/lib/auth";
 import { UserRole } from "@/lib/constants";
 import { getAssignableUserIds } from "@/lib/hierarchy";
 import dayjs from "dayjs";
+import isSameOrAfter from "dayjs/plugin/isSameOrAfter";
+import isSameOrBefore from "dayjs/plugin/isSameOrBefore";
 import mongoose from "mongoose";
+
+dayjs.extend(isSameOrAfter);
+dayjs.extend(isSameOrBefore);
 
 async function handleGet(req: NextRequest, user: any) {
   await connectDB();
