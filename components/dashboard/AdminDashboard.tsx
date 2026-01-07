@@ -42,11 +42,19 @@ export function AdminDashboard() {
   }, []);
 
   if (loading) {
-    return <div>Loading...</div>;
+    return (
+      <div className="flex items-center justify-center h-64">
+        <div className="text-gray-500 dark:text-gray-400">Loading...</div>
+      </div>
+    );
   }
 
   if (!data) {
-    return <div>Error loading dashboard</div>;
+    return (
+      <div className="flex items-center justify-center h-64">
+        <div className="text-red-500 dark:text-red-400">Error loading dashboard</div>
+      </div>
+    );
   }
 
   return (
@@ -55,7 +63,7 @@ export function AdminDashboard() {
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Total Leads</CardTitle>
-            <FileText className="h-4 w-4 text-gray-500" />
+            <FileText className="h-4 w-4 text-gray-500 dark:text-gray-400" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">{data.totalLeads}</div>
@@ -64,7 +72,7 @@ export function AdminDashboard() {
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Active Users</CardTitle>
-            <UserCheck className="h-4 w-4 text-gray-500" />
+            <UserCheck className="h-4 w-4 text-gray-500 dark:text-gray-400" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">{data.activeUsers}</div>
@@ -73,7 +81,7 @@ export function AdminDashboard() {
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Inactive Users</CardTitle>
-            <UserX className="h-4 w-4 text-gray-500" />
+            <UserX className="h-4 w-4 text-gray-500 dark:text-gray-400" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">{data.inactiveUsers}</div>
@@ -82,7 +90,7 @@ export function AdminDashboard() {
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Total Users</CardTitle>
-            <Users className="h-4 w-4 text-gray-500" />
+            <Users className="h-4 w-4 text-gray-500 dark:text-gray-400" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">
@@ -121,7 +129,7 @@ export function AdminDashboard() {
                 <div key={user.userId} className="flex items-center justify-between">
                   <div>
                     <p className="text-sm font-medium">{user.userName}</p>
-                    <p className="text-xs text-gray-500">{user.userEmail}</p>
+                    <p className="text-xs text-gray-500 dark:text-gray-400">{user.userEmail}</p>
                   </div>
                   <span className="font-semibold">{user.leadCount}</span>
                 </div>
@@ -140,16 +148,16 @@ export function AdminDashboard() {
             {data.recentActivity.map((activity) => (
               <div
                 key={activity._id}
-                className="flex items-center justify-between border-b pb-3 last:border-0"
+                className="flex items-center justify-between border-b border-gray-200 dark:border-gray-800 pb-3 last:border-0"
               >
                 <div>
                   <p className="font-medium">{activity.name}</p>
-                  <p className="text-sm text-gray-500">
+                  <p className="text-sm text-gray-500 dark:text-gray-400">
                     Assigned to {activity.assignedUser.name} • Status:{" "}
                     {activity.status}
                   </p>
                 </div>
-                <span className="text-xs text-gray-500">
+                <span className="text-xs text-gray-500 dark:text-gray-400">
                   {dayjs(activity.updatedAt).format("MMM D, YYYY")}
                 </span>
               </div>

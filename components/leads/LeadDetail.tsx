@@ -358,7 +358,7 @@ export function LeadDetail({ leadId, userRole, userId }: LeadDetailProps) {
               </form>
               <div className="space-y-4">
                 {lead.followUps.length === 0 ? (
-                  <p className="text-sm text-gray-500">No follow-ups yet</p>
+                  <p className="text-sm text-gray-500 dark:text-gray-400">No follow-ups yet</p>
                 ) : (
                   lead.followUps
                     .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime())
@@ -368,21 +368,23 @@ export function LeadDetail({ leadId, userRole, userId }: LeadDetailProps) {
                         <div
                           key={fu._id}
                           className={`rounded-lg border p-4 ${
-                            isOverdue ? "border-red-200 bg-red-50" : "border-gray-200"
+                            isOverdue 
+                              ? "border-red-200 dark:border-red-900 bg-red-50 dark:bg-red-950/50" 
+                              : "border-gray-200 dark:border-gray-800"
                           }`}
                         >
                           <div className="flex items-center justify-between">
                             <div>
-                              <p className="font-medium">
+                              <p className="font-medium text-gray-900 dark:text-gray-100">
                                 {dayjs(fu.date).format("MMM D, YYYY")} at {fu.time}
                               </p>
-                              <p className="text-sm text-gray-600">{fu.comment}</p>
-                              <p className="mt-1 text-xs text-gray-500">
+                              <p className="text-sm text-gray-600 dark:text-gray-300">{fu.comment}</p>
+                              <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
                                 Created by {fu.createdBy.name}
                               </p>
                             </div>
                             {isOverdue && (
-                              <span className="text-xs font-semibold text-red-600">
+                              <span className="text-xs font-semibold text-red-600 dark:text-red-400">
                                 Overdue
                               </span>
                             )}
@@ -417,7 +419,7 @@ export function LeadDetail({ leadId, userRole, userId }: LeadDetailProps) {
               </form>
               <div className="space-y-4">
                 {lead.comments.length === 0 ? (
-                  <p className="text-sm text-gray-500">No comments yet</p>
+                  <p className="text-sm text-gray-500 dark:text-gray-400">No comments yet</p>
                 ) : (
                   lead.comments
                     .sort(
@@ -429,22 +431,22 @@ export function LeadDetail({ leadId, userRole, userId }: LeadDetailProps) {
                         key={comment._id}
                         className={`rounded-lg border p-4 ${
                           comment.author.role === UserRole.ADMIN
-                            ? "border-blue-200 bg-blue-50"
-                            : "border-gray-200"
+                            ? "border-blue-200 dark:border-blue-900 bg-blue-50 dark:bg-blue-950/50"
+                            : "border-gray-200 dark:border-gray-800"
                         }`}
                       >
                         <div className="flex items-start justify-between">
                           <div className="flex-1">
                             <div className="flex items-center gap-2">
-                              <p className="font-medium">{comment.author.name}</p>
+                              <p className="font-medium text-gray-900 dark:text-gray-100">{comment.author.name}</p>
                               {comment.author.role === UserRole.ADMIN && (
-                                <span className="rounded-full bg-blue-600 px-2 py-0.5 text-xs text-white">
+                                <span className="rounded-full bg-blue-600 dark:bg-blue-500 px-2 py-0.5 text-xs text-white">
                                   Admin
                                 </span>
                               )}
                             </div>
-                            <p className="mt-2 text-sm text-gray-700">{comment.text}</p>
-                            <p className="mt-2 text-xs text-gray-500">
+                            <p className="mt-2 text-sm text-gray-700 dark:text-gray-300">{comment.text}</p>
+                            <p className="mt-2 text-xs text-gray-500 dark:text-gray-400">
                               {dayjs(comment.createdAt).format("MMM D, YYYY h:mm A")}
                             </p>
                           </div>
@@ -465,7 +467,7 @@ export function LeadDetail({ leadId, userRole, userId }: LeadDetailProps) {
             <CardContent>
               <div className="space-y-4">
                 {lead.activityLogs.length === 0 ? (
-                  <p className="text-sm text-gray-500">No activity yet</p>
+                  <p className="text-sm text-gray-500 dark:text-gray-400">No activity yet</p>
                 ) : (
                   lead.activityLogs
                     .sort(
@@ -473,10 +475,10 @@ export function LeadDetail({ leadId, userRole, userId }: LeadDetailProps) {
                         new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
                     )
                     .map((log) => (
-                      <div key={log._id} className="flex gap-4 border-l-2 border-gray-200 pl-4">
+                      <div key={log._id} className="flex gap-4 border-l-2 border-gray-200 dark:border-gray-800 pl-4">
                         <div className="flex-1">
-                          <p className="font-medium">{log.description}</p>
-                          <p className="mt-1 text-xs text-gray-500">
+                          <p className="font-medium text-gray-900 dark:text-gray-100">{log.description}</p>
+                          <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
                             {dayjs(log.createdAt).format("MMM D, YYYY h:mm A")} by{" "}
                             {log.performedBy.name}
                           </p>

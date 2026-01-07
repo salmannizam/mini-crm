@@ -50,9 +50,11 @@ export function Sidebar({ userRole, userName }: SidebarProps) {
   );
 
   return (
-    <div className="flex h-screen w-64 flex-col border-r border-gray-200 bg-white">
-      <div className="flex h-16 items-center border-b border-gray-200 px-6">
-        <h1 className="text-xl font-bold text-gray-900">Mini CRM</h1>
+    <div className="flex h-screen w-64 flex-col border-r border-gray-200 bg-white shadow-sm dark:border-gray-800 dark:bg-gray-900">
+      <div className="flex h-16 items-center border-b border-gray-200 px-6 dark:border-gray-800">
+        <h1 className="text-xl font-bold bg-gradient-to-r from-blue-600 to-blue-800 bg-clip-text text-transparent dark:from-blue-400 dark:to-blue-600">
+          Mini CRM
+        </h1>
       </div>
       <nav className="flex-1 space-y-1 px-3 py-4">
         {filteredItems.map((item) => {
@@ -63,26 +65,26 @@ export function Sidebar({ userRole, userName }: SidebarProps) {
               key={item.href}
               href={item.href}
               className={cn(
-                "flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-colors",
+                "flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-all duration-200",
                 isActive
-                  ? "bg-blue-50 text-blue-700"
-                  : "text-gray-700 hover:bg-gray-100"
+                  ? "bg-blue-50 text-blue-700 shadow-sm dark:bg-blue-950/50 dark:text-blue-400"
+                  : "text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-800"
               )}
             >
-              <Icon className="h-5 w-5" />
+              <Icon className={cn("h-5 w-5", isActive && "text-blue-600 dark:text-blue-400")} />
               {item.title}
             </Link>
           );
         })}
       </nav>
-      <div className="border-t border-gray-200 p-4">
-        <div className="flex items-center gap-3 px-3 py-2">
-          <div className="flex h-8 w-8 items-center justify-center rounded-full bg-blue-100">
-            <User className="h-4 w-4 text-blue-600" />
+      <div className="border-t border-gray-200 p-4 space-y-2 dark:border-gray-800">
+        <div className="flex items-center gap-3 px-3 py-2 rounded-lg bg-gray-50 dark:bg-gray-800/50">
+          <div className="flex h-9 w-9 items-center justify-center rounded-full bg-gradient-to-br from-blue-500 to-blue-600 dark:from-blue-600 dark:to-blue-700 shadow-sm">
+            <User className="h-4 w-4 text-white" />
           </div>
-          <div className="flex-1">
-            <p className="text-sm font-medium text-gray-900">{userName}</p>
-            <p className="text-xs text-gray-500 capitalize">{userRole}</p>
+          <div className="flex-1 min-w-0">
+            <p className="text-sm font-semibold text-gray-900 dark:text-gray-100 truncate">{userName}</p>
+            <p className="text-xs text-gray-500 dark:text-gray-400 capitalize">{userRole}</p>
           </div>
         </div>
         <button
@@ -90,7 +92,7 @@ export function Sidebar({ userRole, userName }: SidebarProps) {
             await fetch("/api/auth/logout", { method: "POST" });
             window.location.href = "/login";
           }}
-          className="flex w-full items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium text-gray-700 hover:bg-gray-100"
+          className="flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-800 transition-colors"
         >
           <LogOut className="h-5 w-5" />
           Logout

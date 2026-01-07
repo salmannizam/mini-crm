@@ -17,11 +17,11 @@ export default async function UsersPage() {
   }
 
   return (
-    <div className="flex h-screen bg-gray-50">
+    <div className="flex h-screen bg-gray-50 dark:bg-gray-950">
       <Sidebar userRole={user.role} userName={user.name} />
       <div className="flex-1 flex flex-col overflow-hidden">
         <TopBar title="User Management" />
-        <main className="flex-1 overflow-y-auto p-6">
+        <main className="flex-1 overflow-y-auto p-6 bg-gray-50 dark:bg-gray-950">
           <UsersList />
         </main>
       </div>

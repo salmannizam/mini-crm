@@ -12,11 +12,11 @@ export default async function NewLeadPage() {
   }
 
   return (
-    <div className="flex h-screen bg-gray-50">
+    <div className="flex h-screen bg-gray-50 dark:bg-gray-950">
       <Sidebar userRole={user.role} userName={user.name} />
       <div className="flex-1 flex flex-col overflow-hidden">
         <TopBar title="Create New Lead" />
-        <main className="flex-1 overflow-y-auto p-6">
+        <main className="flex-1 overflow-y-auto p-6 bg-gray-50 dark:bg-gray-950">
           <CreateLeadForm userRole={user.role} userId={user._id.toString()} />
         </main>
       </div>

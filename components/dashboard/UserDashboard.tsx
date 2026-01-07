@@ -41,11 +41,19 @@ export function UserDashboard({ userId }: UserDashboardProps) {
   }, []);
 
   if (loading) {
-    return <div>Loading...</div>;
+    return (
+      <div className="flex items-center justify-center h-64">
+        <div className="text-gray-500 dark:text-gray-400">Loading...</div>
+      </div>
+    );
   }
 
   if (!data) {
-    return <div>Error loading dashboard</div>;
+    return (
+      <div className="flex items-center justify-center h-64">
+        <div className="text-red-500 dark:text-red-400">Error loading dashboard</div>
+      </div>
+    );
   }
 
   const todayFollowUps = data.followUpsToday.flatMap((lead) =>
@@ -66,7 +74,7 @@ export function UserDashboard({ userId }: UserDashboardProps) {
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">My Leads</CardTitle>
-            <FileText className="h-4 w-4 text-gray-500" />
+            <FileText className="h-4 w-4 text-gray-500 dark:text-gray-400" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">{data.myLeadsCount}</div>
@@ -75,7 +83,7 @@ export function UserDashboard({ userId }: UserDashboardProps) {
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Follow-ups Today</CardTitle>
-            <Calendar className="h-4 w-4 text-gray-500" />
+            <Calendar className="h-4 w-4 text-gray-500 dark:text-gray-400" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">{todayFollowUps.length}</div>
@@ -84,10 +92,10 @@ export function UserDashboard({ userId }: UserDashboardProps) {
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Overdue Follow-ups</CardTitle>
-            <AlertCircle className="h-4 w-4 text-gray-500" />
+            <AlertCircle className="h-4 w-4 text-gray-500 dark:text-gray-400" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-red-600">
+            <div className="text-2xl font-bold text-red-600 dark:text-red-400">
               {overdueFollowUps.length}
             </div>
           </CardContent>
@@ -120,17 +128,17 @@ export function UserDashboard({ userId }: UserDashboardProps) {
           <CardContent>
             <div className="space-y-3">
               {todayFollowUps.length === 0 ? (
-                <p className="text-sm text-gray-500">No follow-ups scheduled for today</p>
+                <p className="text-sm text-gray-500 dark:text-gray-400">No follow-ups scheduled for today</p>
               ) : (
                 todayFollowUps.map((fu, idx) => (
                   <Link
                     key={idx}
                     href={`/leads/${fu.leadId}`}
-                    className="block rounded-lg border p-3 hover:bg-gray-50"
+                    className="block rounded-lg border border-gray-200 dark:border-gray-800 p-3 hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors"
                   >
                     <p className="font-medium">{fu.leadName}</p>
-                    <p className="text-sm text-gray-600">{fu.comment}</p>
-                    <p className="text-xs text-gray-500">
+                    <p className="text-sm text-gray-600 dark:text-gray-300">{fu.comment}</p>
+                    <p className="text-xs text-gray-500 dark:text-gray-400">
                       {dayjs(fu.date).format("MMM D")} at {fu.time}
                     </p>
                   </Link>
@@ -142,9 +150,9 @@ export function UserDashboard({ userId }: UserDashboardProps) {
       </div>
 
       {overdueFollowUps.length > 0 && (
-        <Card className="border-red-200 bg-red-50">
+        <Card className="border-red-200 dark:border-red-900 bg-red-50 dark:bg-red-950/50">
           <CardHeader>
-            <CardTitle className="text-red-900">Overdue Follow-ups</CardTitle>
+            <CardTitle className="text-red-900 dark:text-red-200">Overdue Follow-ups</CardTitle>
           </CardHeader>
           <CardContent>
             <div className="space-y-3">
@@ -152,11 +160,11 @@ export function UserDashboard({ userId }: UserDashboardProps) {
                 <Link
                   key={idx}
                   href={`/leads/${fu.leadId}`}
-                  className="block rounded-lg border border-red-200 bg-white p-3 hover:bg-red-50"
+                  className="block rounded-lg border border-red-200 dark:border-red-900 bg-white dark:bg-gray-900 p-3 hover:bg-red-50 dark:hover:bg-red-950/50 transition-colors"
                 >
                   <p className="font-medium">{fu.leadName}</p>
-                  <p className="text-sm text-gray-600">{fu.comment}</p>
-                  <p className="text-xs text-red-600">
+                  <p className="text-sm text-gray-600 dark:text-gray-300">{fu.comment}</p>
+                  <p className="text-xs text-red-600 dark:text-red-400">
                     {dayjs(fu.date).format("MMM D, YYYY")} at {fu.time}
                   </p>
                 </Link>
