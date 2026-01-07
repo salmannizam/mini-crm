@@ -63,14 +63,24 @@ async function handlePatch(
 
   const oldStatus = lead.status;
   const oldAssignedUser = lead.assignedUser.toString();
+  const oldName = lead.name;
+  const oldEmail = lead.email;
+  const oldPhone = lead.phone;
+  const oldAddress = lead.address;
 
+  // Track field changes with metadata
   if (validatedData.status && validatedData.status !== oldStatus) {
     lead.activityLogs.push({
       action: "status_changed",
-      description: `Status changed from ${oldStatus} to ${validatedData.status} by ${user.name}`,
+      description: `Status changed by ${user.name}`,
       performedBy: user._id,
       performedByName: user.name,
       createdAt: new Date(),
+      metadata: {
+        field: "status",
+        oldValue: oldStatus,
+        newValue: validatedData.status,
+      },
     });
   }
 
@@ -81,12 +91,81 @@ async function handlePatch(
     const newUser = await import("@/models/User").then((m) =>
       m.default.findById(validatedData.assignedUser)
     );
+    const oldUser = await import("@/models/User").then((m) =>
+      m.default.findById(oldAssignedUser)
+    );
     lead.activityLogs.push({
-      action: "reassigned",
-      description: `Lead reassigned from previous user to ${newUser?.name || "unknown"} by ${user.name}`,
+      action: "assigned",
+      description: `Lead reassigned by ${user.name}`,
       performedBy: user._id,
       performedByName: user.name,
       createdAt: new Date(),
+      metadata: {
+        field: "assignedUser",
+        oldValue: oldUser?.name || "Unknown",
+        newValue: newUser?.name || "Unknown",
+      },
+    });
+  }
+
+  // Track other field changes
+  if (validatedData.name && validatedData.name !== oldName) {
+    lead.activityLogs.push({
+      action: "updated",
+      description: `Name updated by ${user.name}`,
+      performedBy: user._id,
+      performedByName: user.name,
+      createdAt: new Date(),
+      metadata: {
+        field: "name",
+        oldValue: oldName,
+        newValue: validatedData.name,
+      },
+    });
+  }
+
+  if (validatedData.email && validatedData.email !== oldEmail) {
+    lead.activityLogs.push({
+      action: "updated",
+      description: `Email updated by ${user.name}`,
+      performedBy: user._id,
+      performedByName: user.name,
+      createdAt: new Date(),
+      metadata: {
+        field: "email",
+        oldValue: oldEmail || "N/A",
+        newValue: validatedData.email,
+      },
+    });
+  }
+
+  if (validatedData.phone && validatedData.phone !== oldPhone) {
+    lead.activityLogs.push({
+      action: "updated",
+      description: `Phone updated by ${user.name}`,
+      performedBy: user._id,
+      performedByName: user.name,
+      createdAt: new Date(),
+      metadata: {
+        field: "phone",
+        oldValue: oldPhone,
+        newValue: validatedData.phone,
+      },
+    });
+  }
+
+  if (validatedData.address && validatedData.address !== oldAddress) {
+    lead.activityLogs.push({
+      action: "updated",
+      description: `Address updated by ${user.name}`,
+      performedBy: user._id,
+      performedByName: user.name,
+      createdAt: new Date(),
+      metadata: {
+        field: "address",
+        oldValue: oldAddress,
+        newValue: validatedData.address,
+      },
     });
   }
 

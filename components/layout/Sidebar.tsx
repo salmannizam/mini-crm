@@ -10,6 +10,9 @@ import {
   User,
   X,
   BarChart3,
+  TrendingUp,
+  Calendar,
+  History,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { UserRole } from "@/lib/constants";
@@ -35,6 +38,24 @@ export function Sidebar({ userRole, userName }: SidebarProps) {
       title: "Leads",
       href: "/leads",
       icon: FileText,
+      roles: [UserRole.ADMIN, UserRole.MANAGER, UserRole.TEAM_LEADER, UserRole.USER],
+    },
+    {
+      title: "Analytics",
+      href: "/analytics",
+      icon: TrendingUp,
+      roles: [UserRole.ADMIN, UserRole.MANAGER, UserRole.TEAM_LEADER, UserRole.USER],
+    },
+    {
+      title: "Calendar",
+      href: "/calendar",
+      icon: Calendar,
+      roles: [UserRole.ADMIN, UserRole.MANAGER, UserRole.TEAM_LEADER, UserRole.USER],
+    },
+    {
+      title: "Activity History",
+      href: "/activity",
+      icon: History,
       roles: [UserRole.ADMIN, UserRole.MANAGER, UserRole.TEAM_LEADER, UserRole.USER],
     },
     ...([UserRole.MANAGER, UserRole.TEAM_LEADER].includes(userRole as UserRole)

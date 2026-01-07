@@ -2,6 +2,7 @@
 
 import { Menu } from "lucide-react";
 import { ThemeToggle } from "@/components/theme/theme-toggle";
+import { ReminderBell } from "@/components/reminders/ReminderBell";
 import { useSidebar } from "./sidebar-provider";
 import { Button } from "@/components/ui/button";
 
@@ -31,6 +32,7 @@ export function TopBar({ title, children }: TopBarProps) {
       </div>
       <div className="flex items-center gap-2 sm:gap-4">
         {children}
+        <ReminderBell />
         <ThemeToggle />
       </div>
     </div>

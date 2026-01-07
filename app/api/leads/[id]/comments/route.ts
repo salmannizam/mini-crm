@@ -44,6 +44,9 @@ async function handlePost(
     performedBy: user._id,
     performedByName: user.name,
     createdAt: new Date(),
+    metadata: {
+      commentLength: validatedData.text.length,
+    },
   });
 
   await lead.save();

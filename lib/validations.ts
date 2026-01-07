@@ -87,4 +87,7 @@ export const addFollowUpSchema = z.object({
   date: z.string().min(1, "Date is required"),
   time: z.string().min(1, "Time is required"),
   comment: z.string().min(1, "Comment is required"),
+  isRecurring: z.boolean().optional(),
+  recurringInterval: z.enum(["daily", "weekly", "monthly"]).optional(),
+  recurringEndDate: z.string().optional(),
 });

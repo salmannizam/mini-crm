@@ -8,6 +8,7 @@ import { Select } from "@/components/ui/select";
 import { StatusBadge } from "@/components/StatusBadge";
 import { LeadStatus, UserRole } from "@/lib/constants";
 import { Card, CardContent } from "@/components/ui/card";
+import { AdvancedFilters, FilterState } from "./AdvancedFilters";
 import dayjs from "dayjs";
 
 interface Lead {
@@ -35,6 +36,22 @@ export function LeadsList({ userRole, userId }: LeadsListProps) {
   const [users, setUsers] = useState<Array<{ id: string; name: string; email: string }>>([]);
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
+  const [filters, setFilters] = useState<FilterState>({
+    search: "",
+    name: "",
+    email: "",
+    phone: "",
+    address: "",
+    statuses: [],
+    sources: [],
+    assignedUsers: [],
+    createdFrom: "",
+    createdTo: "",
+    updatedFrom: "",
+    updatedTo: "",
+    sortBy: "createdAt",
+    sortOrder: "desc",
+  });
 
   useEffect(() => {
     fetchUsers();
@@ -42,7 +59,7 @@ export function LeadsList({ userRole, userId }: LeadsListProps) {
 
   useEffect(() => {
     fetchLeads();
-  }, [search, statusFilter, assignedUserFilter, page]);
+  }, [search, statusFilter, assignedUserFilter, page, filters]);
 
   const fetchUsers = async () => {
     // All roles that can assign leads should fetch their assignable users
@@ -59,10 +76,45 @@ export function LeadsList({ userRole, userId }: LeadsListProps) {
       page: page.toString(),
       limit: "10",
     });
-    if (search) params.append("search", search);
-    if (statusFilter) params.append("status", statusFilter);
-    if (assignedUserFilter) {
-      params.append("assignedUser", assignedUserFilter);
+
+    // Use advanced filters if any are set, otherwise use legacy filters
+    const hasAdvancedFilters =
+      filters.name ||
+      filters.email ||
+      filters.phone ||
+      filters.address ||
+      filters.statuses.length > 0 ||
+      filters.sources.length > 0 ||
+      filters.assignedUsers.length > 0 ||
+      filters.createdFrom ||
+      filters.createdTo ||
+      filters.updatedFrom ||
+      filters.updatedTo ||
+      filters.sortBy !== "createdAt" ||
+      filters.sortOrder !== "desc";
+
+    if (hasAdvancedFilters) {
+      // Use advanced filters
+      if (filters.name) params.append("name", filters.name);
+      if (filters.email) params.append("email", filters.email);
+      if (filters.phone) params.append("phone", filters.phone);
+      if (filters.address) params.append("address", filters.address);
+      if (filters.statuses.length > 0) params.append("statuses", filters.statuses.join(","));
+      if (filters.sources.length > 0) params.append("sources", filters.sources.join(","));
+      if (filters.assignedUsers.length > 0) params.append("assignedUsers", filters.assignedUsers.join(","));
+      if (filters.createdFrom) params.append("createdFrom", filters.createdFrom);
+      if (filters.createdTo) params.append("createdTo", filters.createdTo);
+      if (filters.updatedFrom) params.append("updatedFrom", filters.updatedFrom);
+      if (filters.updatedTo) params.append("updatedTo", filters.updatedTo);
+      params.append("sortBy", filters.sortBy);
+      params.append("sortOrder", filters.sortOrder);
+    } else {
+      // Use legacy filters for backward compatibility
+      if (search) params.append("search", search);
+      if (statusFilter) params.append("status", statusFilter);
+      if (assignedUserFilter) {
+        params.append("assignedUser", assignedUserFilter);
+      }
     }
 
     const res = await fetch(`/api/leads?${params}`);
@@ -72,15 +124,44 @@ export function LeadsList({ userRole, userId }: LeadsListProps) {
     setLoading(false);
   };
 
+  const handleFiltersChange = (newFilters: FilterState) => {
+    setFilters(newFilters);
+    setPage(1); // Reset to first page when filters change
+  };
+
+  const handleResetFilters = () => {
+    setFilters({
+      search: "",
+      name: "",
+      email: "",
+      phone: "",
+      address: "",
+      statuses: [],
+      sources: [],
+      assignedUsers: [],
+      createdFrom: "",
+      createdTo: "",
+      updatedFrom: "",
+      updatedTo: "",
+      sortBy: "createdAt",
+      sortOrder: "desc",
+    });
+    setSearch("");
+    setStatusFilter("");
+    setAssignedUserFilter("");
+    setPage(1);
+  };
+
   return (
     <div className="space-y-4">
+      {/* Quick Search Bar */}
       <Card>
         <CardContent className="p-4">
           <div className="flex flex-col gap-4 md:flex-row">
             <div className="relative flex-1">
               <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400 dark:text-gray-500" />
               <Input
-                placeholder="Search leads..."
+                placeholder="Quick search (name, email, phone, address)..."
                 value={search}
                 onChange={(e) => {
                   setSearch(e.target.value);
@@ -122,6 +203,15 @@ export function LeadsList({ userRole, userId }: LeadsListProps) {
           </div>
         </CardContent>
       </Card>
+
+      {/* Advanced Filters */}
+      <AdvancedFilters
+        userRole={userRole}
+        users={users}
+        filters={filters}
+        onFiltersChange={handleFiltersChange}
+        onReset={handleResetFilters}
+      />
 
       {loading ? (
         <div className="text-center py-8 text-gray-500 dark:text-gray-400">Loading...</div>

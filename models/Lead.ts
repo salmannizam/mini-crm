@@ -7,6 +7,10 @@ export interface IFollowUp {
   comment: string;
   createdBy: mongoose.Types.ObjectId;
   createdAt: Date;
+  isRecurring?: boolean;
+  recurringInterval?: "daily" | "weekly" | "monthly";
+  recurringEndDate?: Date;
+  reminderSent?: boolean;
 }
 
 export interface IComment {
@@ -23,6 +27,12 @@ export interface IActivityLog {
   performedBy: mongoose.Types.ObjectId;
   performedByName: string;
   createdAt: Date;
+  metadata?: {
+    field?: string;
+    oldValue?: string;
+    newValue?: string;
+    [key: string]: any;
+  };
 }
 
 export interface ILead extends Document {
@@ -61,6 +71,21 @@ const FollowUpSchema = new Schema(
       type: Schema.Types.ObjectId,
       ref: "User",
       required: true,
+    },
+    isRecurring: {
+      type: Boolean,
+      default: false,
+    },
+    recurringInterval: {
+      type: String,
+      enum: ["daily", "weekly", "monthly"],
+    },
+    recurringEndDate: {
+      type: Date,
+    },
+    reminderSent: {
+      type: Boolean,
+      default: false,
     },
   },
   {
@@ -111,6 +136,10 @@ const ActivityLogSchema = new Schema(
     performedByName: {
       type: String,
       required: true,
+    },
+    metadata: {
+      type: Schema.Types.Mixed,
+      default: {},
     },
   },
   {
