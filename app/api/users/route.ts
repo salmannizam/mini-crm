@@ -154,7 +154,4 @@ async function handlePost(req: NextRequest, user: any) {
 }
 
 export const GET = requireAuth(handleGet);
-export const POST = requireRole(
-  [UserRole.ADMIN, UserRole.MANAGER, UserRole.TEAM_LEADER],
-  handlePost
-);
+export const POST = requireRole([UserRole.ADMIN], handlePost);

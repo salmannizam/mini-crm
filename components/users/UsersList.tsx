@@ -178,12 +178,14 @@ export function UsersList() {
 
   return (
     <div className="space-y-4">
-      <div className="flex justify-end">
-        <Button onClick={() => setCreateDialogOpen(true)}>
-          <Plus className="mr-2 h-4 w-4" />
-          Create User
-        </Button>
-      </div>
+      {currentUserRole === UserRole.ADMIN && (
+        <div className="flex justify-end">
+          <Button onClick={() => setCreateDialogOpen(true)}>
+            <Plus className="mr-2 h-4 w-4" />
+            Create User
+          </Button>
+        </div>
+      )}
 
       {loading ? (
         <div className="text-center py-8 text-gray-500 dark:text-gray-400">Loading...</div>
@@ -223,29 +225,31 @@ export function UsersList() {
                       </td>
                       <td className="px-4 py-3 text-sm">{user.leadCount || 0}</td>
                       <td className="px-4 py-3">
-                        <div className="flex items-center gap-2">
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            onClick={() => openEditDialog(user)}
-                          >
-                            <Edit className="h-4 w-4" />
-                          </Button>
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            onClick={() => handleToggleActive(user)}
-                          >
-                            {user.isActive ? "Deactivate" : "Activate"}
-                          </Button>
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            onClick={() => handleDelete(user)}
-                          >
-                            <Trash2 className="h-4 w-4 text-red-600 dark:text-red-400" />
-                          </Button>
-                        </div>
+                        {currentUserRole === UserRole.ADMIN && (
+                          <div className="flex items-center gap-2">
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => openEditDialog(user)}
+                            >
+                              <Edit className="h-4 w-4" />
+                            </Button>
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => handleToggleActive(user)}
+                            >
+                              {user.isActive ? "Deactivate" : "Activate"}
+                            </Button>
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => handleDelete(user)}
+                            >
+                              <Trash2 className="h-4 w-4 text-red-600 dark:text-red-400" />
+                            </Button>
+                          </div>
+                        )}
                       </td>
                     </tr>
                   ))}

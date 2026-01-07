@@ -36,13 +36,13 @@ export function Sidebar({ userRole, userName }: SidebarProps) {
       icon: FileText,
       roles: [UserRole.ADMIN, UserRole.MANAGER, UserRole.TEAM_LEADER, UserRole.USER],
     },
-    ...([UserRole.ADMIN, UserRole.MANAGER, UserRole.TEAM_LEADER].includes(userRole as UserRole)
+    ...(userRole === UserRole.ADMIN
       ? [
           {
             title: "Users",
             href: "/users",
             icon: Users,
-            roles: [UserRole.ADMIN, UserRole.MANAGER, UserRole.TEAM_LEADER],
+            roles: [UserRole.ADMIN],
           },
         ]
       : []),

@@ -4,7 +4,7 @@ import User from "@/models/User";
 import { updateUserSchema } from "@/lib/validations";
 import { requireAuth, requireRole } from "@/lib/auth";
 import { UserRole, getCreatableRoles } from "@/lib/constants";
-import { canManageUser, validateHierarchy } from "@/lib/hierarchy";
+import { validateHierarchy } from "@/lib/hierarchy";
 import mongoose from "mongoose";
 
 async function handleGet(
@@ -15,12 +15,11 @@ async function handleGet(
   await connectDB();
 
   const targetUserId = params.id;
-
-  const { canManageUser } = await import("@/lib/hierarchy");
-  const canManage = await canManageUser(user._id.toString(), targetUserId);
   const isSelf = user._id.toString() === targetUserId;
+  const isAdmin = user.role === UserRole.ADMIN;
 
-  if (!canManage && !isSelf) {
+  // Only Admin can view other users, or users can view themselves
+  if (!isAdmin && !isSelf) {
     return Response.json({ error: "Forbidden" }, { status: 403 });
   }
 
@@ -55,16 +54,16 @@ async function handlePatch(
     return Response.json({ error: "User not found" }, { status: 404 });
   }
 
-  // Check if user can manage this target user
-  const canManage = await canManageUser(user._id.toString(), params.id);
+  // Only Admin can edit users (except users can edit their own name/email)
   const isSelf = user._id.toString() === params.id;
+  const isAdmin = user.role === UserRole.ADMIN;
 
-  if (!canManage && !isSelf) {
+  if (!isAdmin && !isSelf) {
     return Response.json({ error: "Forbidden" }, { status: 403 });
   }
 
-  // Only managers can change role, isActive, and reportingTo
-  if (!canManage) {
+  // Only Admin can change role, isActive, and reportingTo
+  if (!isAdmin) {
     if (validatedData.role || validatedData.isActive !== undefined || validatedData.reportingTo !== undefined) {
       return Response.json(
         { error: "You can only edit your own name and email" },
@@ -135,10 +134,8 @@ async function handleDelete(
 ) {
   await connectDB();
 
-  const { canManageUser } = await import("@/lib/hierarchy");
-  const canManage = await canManageUser(user._id.toString(), params.id);
-
-  if (!canManage && user.role !== UserRole.ADMIN) {
+  // Only Admin can delete users
+  if (user.role !== UserRole.ADMIN) {
     return Response.json({ error: "Forbidden" }, { status: 403 });
   }
 

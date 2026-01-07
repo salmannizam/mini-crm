@@ -13,7 +13,7 @@ export default async function UsersPage() {
     redirect("/login");
   }
 
-  if (![UserRole.ADMIN, UserRole.MANAGER, UserRole.TEAM_LEADER].includes(user.role as UserRole)) {
+  if (user.role !== UserRole.ADMIN) {
     redirect("/dashboard");
   }
 
