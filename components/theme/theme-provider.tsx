@@ -39,9 +39,6 @@ export function ThemeProvider({
     
     const root = window.document.documentElement;
     
-    // Always remove dark class first
-    root.classList.remove("dark");
-
     let shouldBeDark = false;
     
     // If system, check OS preference
@@ -51,17 +48,16 @@ export function ThemeProvider({
       shouldBeDark = true;
     }
 
-    // Apply the theme
+    // Apply the theme synchronously
     if (shouldBeDark) {
       root.classList.add("dark");
     } else {
-      // Explicitly ensure dark is removed for light mode
       root.classList.remove("dark");
     }
   }, []);
 
-  // Apply theme immediately on mount
-  React.useEffect(() => {
+  // Apply theme immediately on mount and whenever theme changes
+  React.useLayoutEffect(() => {
     applyTheme(theme);
   }, [theme, applyTheme]);
 
@@ -72,9 +68,10 @@ export function ThemeProvider({
     const mediaQuery = window.matchMedia("(prefers-color-scheme: dark)");
     const handleChange = () => {
       const root = window.document.documentElement;
-      root.classList.remove("dark");
       if (mediaQuery.matches) {
         root.classList.add("dark");
+      } else {
+        root.classList.remove("dark");
       }
     };
 
@@ -84,9 +81,26 @@ export function ThemeProvider({
 
   const value = {
     theme,
-    setTheme: (theme: Theme) => {
-      localStorage.setItem(storageKey, theme);
-      setTheme(theme);
+    setTheme: (newTheme: Theme) => {
+      localStorage.setItem(storageKey, newTheme);
+      setTheme(newTheme);
+      // Apply immediately when theme changes
+      if (typeof window !== "undefined") {
+        const root = window.document.documentElement;
+        let shouldBeDark = false;
+        
+        if (newTheme === "system") {
+          shouldBeDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
+        } else if (newTheme === "dark") {
+          shouldBeDark = true;
+        }
+        
+        if (shouldBeDark) {
+          root.classList.add("dark");
+        } else {
+          root.classList.remove("dark");
+        }
+      }
     },
   };
 

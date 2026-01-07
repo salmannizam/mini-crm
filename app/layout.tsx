@@ -33,38 +33,25 @@ export default function RootLayout({
           suppressHydrationWarning
           dangerouslySetInnerHTML={{
             __html: `
-              !(function() {
+              (function() {
                 try {
                   const storageKey = 'mini-crm-theme';
                   const theme = localStorage.getItem(storageKey) || 'system';
                   const root = document.documentElement;
                   
-                  console.log('Theme script running, theme:', theme);
-                  
-                  // Always remove dark class first
-                  root.classList.remove('dark');
-                  
                   let shouldBeDark = false;
                   
                   if (theme === 'system') {
                     shouldBeDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-                    console.log('System theme detected:', shouldBeDark ? 'dark' : 'light');
                   } else if (theme === 'dark') {
                     shouldBeDark = true;
-                    console.log('Dark theme selected');
-                  } else {
-                    console.log('Light theme selected');
                   }
                   
                   if (shouldBeDark) {
                     root.classList.add('dark');
-                    console.log('Added dark class to html element');
                   } else {
                     root.classList.remove('dark');
-                    console.log('Removed dark class from html element');
                   }
-                  
-                  console.log('HTML classes after theme application:', root.className);
                 } catch (e) {
                   console.error('Theme script error:', e);
                 }

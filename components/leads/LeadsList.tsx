@@ -132,28 +132,28 @@ export function LeadsList({ userRole, userId }: LeadsListProps) {
         </Card>
       ) : (
         <>
-          <div className="overflow-x-auto">
-            <table className="w-full border-collapse">
+          <div className="overflow-x-auto -mx-4 sm:mx-0">
+            <table className="w-full border-collapse min-w-[640px]">
               <thead>
                 <tr className="border-b border-gray-200 dark:border-gray-800">
-                  <th className="px-4 py-3 text-left text-sm font-semibold text-gray-900 dark:text-gray-100">
+                  <th className="px-3 sm:px-4 py-3 text-left text-xs sm:text-sm font-semibold text-gray-900 dark:text-gray-100">
                     Name
                   </th>
-                  <th className="px-4 py-3 text-left text-sm font-semibold text-gray-900 dark:text-gray-100">
+                  <th className="px-3 sm:px-4 py-3 text-left text-xs sm:text-sm font-semibold text-gray-900 dark:text-gray-100 hidden sm:table-cell">
                     Email
                   </th>
-                  <th className="px-4 py-3 text-left text-sm font-semibold text-gray-900 dark:text-gray-100">
+                  <th className="px-3 sm:px-4 py-3 text-left text-xs sm:text-sm font-semibold text-gray-900 dark:text-gray-100 hidden md:table-cell">
                     Phone
                   </th>
-                  <th className="px-4 py-3 text-left text-sm font-semibold text-gray-900 dark:text-gray-100">
+                  <th className="px-3 sm:px-4 py-3 text-left text-xs sm:text-sm font-semibold text-gray-900 dark:text-gray-100">
                     Status
                   </th>
                   {userRole === UserRole.ADMIN && (
-                    <th className="px-4 py-3 text-left text-sm font-semibold text-gray-900 dark:text-gray-100">
+                    <th className="px-3 sm:px-4 py-3 text-left text-xs sm:text-sm font-semibold text-gray-900 dark:text-gray-100 hidden lg:table-cell">
                       Assigned To
                     </th>
                   )}
-                  <th className="px-4 py-3 text-left text-sm font-semibold text-gray-900 dark:text-gray-100">
+                  <th className="px-3 sm:px-4 py-3 text-left text-xs sm:text-sm font-semibold text-gray-900 dark:text-gray-100 hidden md:table-cell">
                     Updated
                   </th>
                 </tr>
@@ -164,29 +164,32 @@ export function LeadsList({ userRole, userId }: LeadsListProps) {
                     key={lead._id}
                     className="border-b border-gray-100 dark:border-gray-800 hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors"
                   >
-                    <td className="px-4 py-3">
+                    <td className="px-3 sm:px-4 py-3">
                       <Link
                         href={`/leads/${lead._id}`}
-                        className="font-medium text-blue-600 dark:text-blue-400 hover:underline"
+                        className="font-medium text-blue-600 dark:text-blue-400 hover:underline text-sm"
                       >
                         {lead.name}
                       </Link>
+                      <div className="sm:hidden mt-1 text-xs text-gray-500 dark:text-gray-400">
+                        {lead.email}
+                      </div>
                     </td>
-                    <td className="px-4 py-3 text-sm text-gray-600 dark:text-gray-300">
+                    <td className="px-3 sm:px-4 py-3 text-sm text-gray-600 dark:text-gray-300 hidden sm:table-cell">
                       {lead.email}
                     </td>
-                    <td className="px-4 py-3 text-sm text-gray-600 dark:text-gray-300">
+                    <td className="px-3 sm:px-4 py-3 text-sm text-gray-600 dark:text-gray-300 hidden md:table-cell">
                       {lead.phone}
                     </td>
-                    <td className="px-4 py-3">
+                    <td className="px-3 sm:px-4 py-3">
                       <StatusBadge status={lead.status} />
                     </td>
                     {userRole === UserRole.ADMIN && (
-                      <td className="px-4 py-3 text-sm text-gray-600 dark:text-gray-300">
+                      <td className="px-3 sm:px-4 py-3 text-sm text-gray-600 dark:text-gray-300 hidden lg:table-cell">
                         {lead.assignedUser.name}
                       </td>
                     )}
-                    <td className="px-4 py-3 text-sm text-gray-500 dark:text-gray-400">
+                    <td className="px-3 sm:px-4 py-3 text-sm text-gray-500 dark:text-gray-400 hidden md:table-cell">
                       {dayjs(lead.updatedAt).format("MMM D, YYYY")}
                     </td>
                   </tr>
