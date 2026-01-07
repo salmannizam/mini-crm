@@ -6,6 +6,7 @@ export interface IUser extends Document {
   email: string;
   password: string;
   role: UserRole;
+  reportingTo?: mongoose.Types.ObjectId; // User's manager/TL (hierarchy)
   isActive: boolean;
   isDeleted: boolean;
   createdBy?: mongoose.Types.ObjectId;
@@ -37,6 +38,11 @@ const UserSchema: Schema = new Schema(
       enum: Object.values(UserRole),
       default: UserRole.USER,
     },
+    reportingTo: {
+      type: Schema.Types.ObjectId,
+      ref: "User",
+      default: null,
+    },
     isActive: {
       type: Boolean,
       default: true,
@@ -61,6 +67,8 @@ const UserSchema: Schema = new Schema(
 
 UserSchema.index({ email: 1 });
 UserSchema.index({ isDeleted: 1, isActive: 1 });
+UserSchema.index({ reportingTo: 1 });
+UserSchema.index({ role: 1, reportingTo: 1 });
 
 const User: Model<IUser> =
   mongoose.models.User || mongoose.model<IUser>("User", UserSchema);

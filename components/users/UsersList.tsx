@@ -8,7 +8,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, Di
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select } from "@/components/ui/select";
-import { UserRole } from "@/lib/constants";
+import { UserRole, getCreatableRoles, getRoleDisplayName } from "@/lib/constants";
 import { useToast } from "@/components/ui/toast";
 import { Badge } from "@/components/ui/badge";
 
@@ -19,6 +19,8 @@ interface User {
   role: UserRole;
   isActive: boolean;
   leadCount?: number;
+  reportingTo?: string;
+  reportingToName?: string;
   createdAt: string;
 }
 
@@ -34,11 +36,42 @@ export function UsersList() {
     email: "",
     password: "",
     role: UserRole.USER,
+    reportingTo: "",
   });
+  const [currentUserRole, setCurrentUserRole] = useState<UserRole>(UserRole.USER);
+  const [availableManagers, setAvailableManagers] = useState<Array<{ id: string; name: string; role: UserRole }>>([]);
 
   useEffect(() => {
     fetchUsers();
+    fetchCurrentUser();
   }, []);
+
+  useEffect(() => {
+    // Fetch available managers when role changes
+    if (formData.role) {
+      fetchAvailableManagers(formData.role);
+    }
+  }, [formData.role]);
+
+  const fetchCurrentUser = async () => {
+    const res = await fetch("/api/auth/me");
+    if (res.ok) {
+      const data = await res.json();
+      setCurrentUserRole(data.role);
+    }
+  };
+
+  const fetchAvailableManagers = async (role: UserRole) => {
+    if (role === UserRole.ADMIN) {
+      setAvailableManagers([]);
+      return;
+    }
+    const res = await fetch(`/api/users?forReportingTo=${role}`);
+    if (res.ok) {
+      const data = await res.json();
+      setAvailableManagers(data.users || []);
+    }
+  };
 
   const fetchUsers = async () => {
     setLoading(true);
@@ -61,7 +94,7 @@ export function UsersList() {
     if (res.ok) {
       addToast({ title: "Success", description: "User created successfully", variant: "success" });
       setCreateDialogOpen(false);
-      setFormData({ name: "", email: "", password: "", role: UserRole.USER });
+      setFormData({ name: "", email: "", password: "", role: UserRole.USER, reportingTo: "" });
       fetchUsers();
     } else {
       const error = await res.json();
@@ -77,6 +110,7 @@ export function UsersList() {
       name: formData.name,
       email: formData.email,
       role: formData.role,
+      reportingTo: formData.reportingTo || null,
     };
 
     const res = await fetch(`/api/users/${selectedUser._id}`, {
@@ -137,6 +171,7 @@ export function UsersList() {
       email: user.email,
       password: "",
       role: user.role,
+      reportingTo: user.reportingTo || "",
     });
     setEditDialogOpen(true);
   };
@@ -162,6 +197,7 @@ export function UsersList() {
                     <th className="px-4 py-3 text-left text-sm font-semibold text-gray-900 dark:text-gray-100">Name</th>
                     <th className="px-4 py-3 text-left text-sm font-semibold text-gray-900 dark:text-gray-100">Email</th>
                     <th className="px-4 py-3 text-left text-sm font-semibold text-gray-900 dark:text-gray-100">Role</th>
+                    <th className="px-4 py-3 text-left text-sm font-semibold text-gray-900 dark:text-gray-100">Reports To</th>
                     <th className="px-4 py-3 text-left text-sm font-semibold text-gray-900 dark:text-gray-100">Status</th>
                     <th className="px-4 py-3 text-left text-sm font-semibold text-gray-900 dark:text-gray-100">Leads</th>
                     <th className="px-4 py-3 text-left text-sm font-semibold text-gray-900 dark:text-gray-100">Actions</th>
@@ -174,8 +210,11 @@ export function UsersList() {
                       <td className="px-4 py-3 text-sm text-gray-600 dark:text-gray-300">{user.email}</td>
                       <td className="px-4 py-3">
                         <Badge variant={user.role === UserRole.ADMIN ? "blue" : "default"}>
-                          {user.role}
+                          {getRoleDisplayName(user.role)}
                         </Badge>
+                      </td>
+                      <td className="px-4 py-3 text-sm text-gray-600 dark:text-gray-300">
+                        {user.reportingToName || "-"}
                       </td>
                       <td className="px-4 py-3">
                         <Badge variant={user.isActive ? "green" : "red"}>
@@ -261,16 +300,36 @@ export function UsersList() {
               <Select
                 id="create-role"
                 value={formData.role}
-                onChange={(e) => setFormData({ ...formData, role: e.target.value as UserRole })}
+                onChange={(e) => {
+                  const newRole = e.target.value as UserRole;
+                  setFormData({ ...formData, role: newRole, reportingTo: "" });
+                }}
                 required
               >
-                {Object.values(UserRole).map((role) => (
+                {getCreatableRoles(currentUserRole).map((role) => (
                   <option key={role} value={role}>
-                    {role.charAt(0).toUpperCase() + role.slice(1)}
+                    {getRoleDisplayName(role)}
                   </option>
                 ))}
               </Select>
             </div>
+            {formData.role !== UserRole.ADMIN && (
+              <div>
+                <Label htmlFor="create-reportingTo">Reports To</Label>
+                <Select
+                  id="create-reportingTo"
+                  value={formData.reportingTo}
+                  onChange={(e) => setFormData({ ...formData, reportingTo: e.target.value })}
+                >
+                  <option value="">Select Manager</option>
+                  {availableManagers.map((manager) => (
+                    <option key={manager.id} value={manager.id}>
+                      {manager.name} ({getRoleDisplayName(manager.role)})
+                    </option>
+                  ))}
+                </Select>
+              </div>
+            )}
             <DialogFooter>
               <Button type="button" variant="outline" onClick={() => setCreateDialogOpen(false)}>
                 Cancel
@@ -312,16 +371,36 @@ export function UsersList() {
               <Select
                 id="edit-role"
                 value={formData.role}
-                onChange={(e) => setFormData({ ...formData, role: e.target.value as UserRole })}
+                onChange={(e) => {
+                  const newRole = e.target.value as UserRole;
+                  setFormData({ ...formData, role: newRole, reportingTo: "" });
+                }}
                 required
               >
-                {Object.values(UserRole).map((role) => (
+                {getCreatableRoles(currentUserRole).map((role) => (
                   <option key={role} value={role}>
-                    {role.charAt(0).toUpperCase() + role.slice(1)}
+                    {getRoleDisplayName(role)}
                   </option>
                 ))}
               </Select>
             </div>
+            {formData.role !== UserRole.ADMIN && (
+              <div>
+                <Label htmlFor="edit-reportingTo">Reports To</Label>
+                <Select
+                  id="edit-reportingTo"
+                  value={formData.reportingTo}
+                  onChange={(e) => setFormData({ ...formData, reportingTo: e.target.value })}
+                >
+                  <option value="">Select Manager</option>
+                  {availableManagers.map((manager) => (
+                    <option key={manager.id} value={manager.id}>
+                      {manager.name} ({getRoleDisplayName(manager.role)})
+                    </option>
+                  ))}
+                </Select>
+              </div>
+            )}
             <DialogFooter>
               <Button type="button" variant="outline" onClick={() => setEditDialogOpen(false)}>
                 Cancel

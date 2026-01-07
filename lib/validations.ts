@@ -11,6 +11,11 @@ export const createUserSchema = z.object({
   email: z.string().email("Invalid email address"),
   password: z.string().min(6, "Password must be at least 6 characters"),
   role: z.nativeEnum(UserRole),
+  reportingTo: z
+    .string()
+    .regex(/^[0-9a-fA-F]{24}$/, "Invalid manager ID format")
+    .optional()
+    .nullable(),
 });
 
 export const updateUserSchema = z.object({
@@ -18,6 +23,11 @@ export const updateUserSchema = z.object({
   email: z.string().email("Invalid email address").optional(),
   role: z.nativeEnum(UserRole).optional(),
   isActive: z.boolean().optional(),
+  reportingTo: z
+    .string()
+    .regex(/^[0-9a-fA-F]{24}$/, "Invalid manager ID format")
+    .optional()
+    .nullable(),
 });
 
 export const createLeadSchema = z.preprocess(

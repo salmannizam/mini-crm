@@ -3,7 +3,9 @@ import connectDB from "@/lib/db";
 import User from "@/models/User";
 import { updateUserSchema } from "@/lib/validations";
 import { requireAuth, requireRole } from "@/lib/auth";
-import { UserRole } from "@/lib/constants";
+import { UserRole, getCreatableRoles } from "@/lib/constants";
+import { canManageUser, validateHierarchy } from "@/lib/hierarchy";
+import mongoose from "mongoose";
 
 async function handleGet(
   req: NextRequest,
@@ -14,7 +16,11 @@ async function handleGet(
 
   const targetUserId = params.id;
 
-  if (user.role !== UserRole.ADMIN && user._id.toString() !== targetUserId) {
+  const { canManageUser } = await import("@/lib/hierarchy");
+  const canManage = await canManageUser(user._id.toString(), targetUserId);
+  const isSelf = user._id.toString() === targetUserId;
+
+  if (!canManage && !isSelf) {
     return Response.json({ error: "Forbidden" }, { status: 403 });
   }
 
@@ -49,25 +55,64 @@ async function handlePatch(
     return Response.json({ error: "User not found" }, { status: 404 });
   }
 
-  if (user.role !== UserRole.ADMIN && user._id.toString() !== params.id) {
+  // Check if user can manage this target user
+  const canManage = await canManageUser(user._id.toString(), params.id);
+  const isSelf = user._id.toString() === params.id;
+
+  if (!canManage && !isSelf) {
     return Response.json({ error: "Forbidden" }, { status: 403 });
   }
 
-  if (user.role !== UserRole.ADMIN && validatedData.role) {
-    return Response.json(
-      { error: "Cannot change role" },
-      { status: 403 }
-    );
+  // Only managers can change role, isActive, and reportingTo
+  if (!canManage) {
+    if (validatedData.role || validatedData.isActive !== undefined || validatedData.reportingTo !== undefined) {
+      return Response.json(
+        { error: "You can only edit your own name and email" },
+        { status: 403 }
+      );
+    }
+  } else {
+    // If changing role, validate permissions
+    if (validatedData.role) {
+      const creatableRoles = getCreatableRoles(user.role);
+      if (!creatableRoles.includes(validatedData.role)) {
+        return Response.json(
+          { error: `You cannot assign role ${validatedData.role}` },
+          { status: 403 }
+        );
+      }
+    }
+
+    // Validate hierarchy if reportingTo is being changed
+    if (validatedData.reportingTo !== undefined) {
+      const newRole = validatedData.role || targetUser.role;
+      const hierarchyValidation = await validateHierarchy(
+        newRole,
+        validatedData.reportingTo,
+        params.id
+      );
+      if (!hierarchyValidation.valid) {
+        return Response.json(
+          { error: hierarchyValidation.error },
+          { status: 400 }
+        );
+      }
+    }
   }
 
-  if (user.role !== UserRole.ADMIN && validatedData.isActive !== undefined) {
-    return Response.json(
-      { error: "Cannot change active status" },
-      { status: 403 }
-    );
+  // Update user fields
+  if (validatedData.name !== undefined) targetUser.name = validatedData.name;
+  if (validatedData.email !== undefined) targetUser.email = validatedData.email;
+  if (validatedData.role !== undefined) targetUser.role = validatedData.role;
+  if (validatedData.isActive !== undefined) targetUser.isActive = validatedData.isActive;
+  
+  // Handle reportingTo separately
+  if (validatedData.reportingTo !== undefined) {
+    targetUser.reportingTo = validatedData.reportingTo 
+      ? new mongoose.Types.ObjectId(validatedData.reportingTo)
+      : undefined;
   }
-
-  Object.assign(targetUser, validatedData);
+  
   targetUser.updatedBy = user._id;
   await targetUser.save();
 
@@ -90,7 +135,10 @@ async function handleDelete(
 ) {
   await connectDB();
 
-  if (user.role !== UserRole.ADMIN) {
+  const { canManageUser } = await import("@/lib/hierarchy");
+  const canManage = await canManageUser(user._id.toString(), params.id);
+
+  if (!canManage && user.role !== UserRole.ADMIN) {
     return Response.json({ error: "Forbidden" }, { status: 403 });
   }
 

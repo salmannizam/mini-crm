@@ -45,7 +45,8 @@ export function LeadsList({ userRole, userId }: LeadsListProps) {
   }, [search, statusFilter, assignedUserFilter, page]);
 
   const fetchUsers = async () => {
-    if (userRole === UserRole.ADMIN) {
+    // All roles that can assign leads should fetch their assignable users
+    if ([UserRole.ADMIN, UserRole.MANAGER, UserRole.TEAM_LEADER].includes(userRole as UserRole)) {
       const res = await fetch("/api/users");
       const data = await res.json();
       setUsers(data.users || []);
@@ -60,7 +61,7 @@ export function LeadsList({ userRole, userId }: LeadsListProps) {
     });
     if (search) params.append("search", search);
     if (statusFilter) params.append("status", statusFilter);
-    if (assignedUserFilter && userRole === UserRole.ADMIN) {
+    if (assignedUserFilter && [UserRole.ADMIN, UserRole.MANAGER, UserRole.TEAM_LEADER].includes(userRole as UserRole)) {
       params.append("assignedUser", assignedUserFilter);
     }
 

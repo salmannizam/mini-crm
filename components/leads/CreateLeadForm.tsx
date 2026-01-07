@@ -23,7 +23,8 @@ export function CreateLeadForm({ userRole, userId }: CreateLeadFormProps) {
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
-    if (userRole === UserRole.ADMIN) {
+    // Admin, Manager, and TL can assign leads to others
+    if ([UserRole.ADMIN, UserRole.MANAGER, UserRole.TEAM_LEADER].includes(userRole as UserRole)) {
       fetchUsers();
     }
   }, [userRole]);
@@ -42,10 +43,11 @@ export function CreateLeadForm({ userRole, userId }: CreateLeadFormProps) {
       const formData = new FormData(e.target as HTMLFormElement);
       const data = Object.fromEntries(formData.entries());
 
-      if (userRole !== UserRole.ADMIN) {
+      if (userRole === UserRole.USER) {
+        // Users can only assign to themselves
         data.assignedUser = userId;
       } else {
-        // Validate assignedUser for admin users
+        // Admin, Manager, and TL must select a user
         const assignedUser = data.assignedUser as string;
         if (!assignedUser || assignedUser === "" || !/^[0-9a-fA-F]{24}$/.test(assignedUser)) {
           addToast({
@@ -119,7 +121,7 @@ export function CreateLeadForm({ userRole, userId }: CreateLeadFormProps) {
             <Label htmlFor="address">Address *</Label>
             <Textarea id="address" name="address" required />
           </div>
-          {userRole === UserRole.ADMIN && (
+          {[UserRole.ADMIN, UserRole.MANAGER, UserRole.TEAM_LEADER].includes(userRole as UserRole) && (
             <div>
               <Label htmlFor="assignedUser">Assigned User *</Label>
               <Select id="assignedUser" name="assignedUser" required>

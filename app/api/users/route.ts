@@ -4,48 +4,62 @@ import connectDB from "@/lib/db";
 import User from "@/models/User";
 import { createUserSchema } from "@/lib/validations";
 import { requireAuth, requireRole, getCurrentUser } from "@/lib/auth";
-import { UserRole } from "@/lib/constants";
+import { UserRole, getCreatableRoles, getReportingRole } from "@/lib/constants";
+import {
+  validateHierarchy,
+  getManageableUsers,
+  canManageUser,
+} from "@/lib/hierarchy";
 
 async function handleGet(req: NextRequest, user: any) {
   await connectDB();
 
-  if (user.role === UserRole.ADMIN) {
-    const users = await User.find({ isDeleted: false })
-      .select("-password")
-      .populate("createdBy", "name email")
-      .sort({ createdAt: -1 });
+  const { searchParams } = new URL(req.url);
+  const forReportingTo = searchParams.get("forReportingTo");
 
-    const usersWithLeadCount = await Promise.all(
-      users.map(async (u: any) => {
-        const leadCount = await import("@/models/Lead").then((m) =>
-          m.default.countDocuments({
-            assignedUser: u._id,
-            isDeleted: false,
-          })
-        );
-        const userObj = u.toObject();
-        return {
-          ...userObj,
-          id: userObj._id.toString(),
-          leadCount,
-        };
-      })
-    );
-
-    return Response.json({ users: usersWithLeadCount });
-  } else {
+  // If requesting users for reportingTo selection
+  if (forReportingTo) {
+    const { getValidReportingToOptions } = await import("@/lib/hierarchy");
+    const validOptions = await getValidReportingToOptions(forReportingTo as any);
     return Response.json({
-      users: [
-        {
-          id: user._id.toString(),
-          name: user.name,
-          email: user.email,
-          role: user.role,
-          isActive: user.isActive,
-        },
-      ],
+      users: validOptions.map((u: any) => ({
+        id: u._id.toString(),
+        name: u.name,
+        role: u.role,
+      })),
     });
   }
+
+  // Get users based on role hierarchy
+  const manageableUsers = await getManageableUsers(user._id.toString());
+
+  const usersWithLeadCount = await Promise.all(
+    manageableUsers.map(async (u: any) => {
+      const leadCount = await import("@/models/Lead").then((m) =>
+        m.default.countDocuments({
+          assignedUser: u._id,
+          isDeleted: false,
+        })
+      );
+      const userObj = u.toObject();
+      
+      // Populate reportingTo if exists
+      let reportingToName = null;
+      if (userObj.reportingTo) {
+        const manager = await User.findById(userObj.reportingTo).select("name");
+        reportingToName = manager?.name || null;
+      }
+
+      return {
+        ...userObj,
+        id: userObj._id.toString(),
+        leadCount,
+        reportingToName,
+      };
+    })
+  );
+
+  return Response.json({ users: usersWithLeadCount });
 }
 
 async function handlePost(req: NextRequest, user: any) {
@@ -53,6 +67,15 @@ async function handlePost(req: NextRequest, user: any) {
   const validatedData = createUserSchema.parse(body);
 
   await connectDB();
+
+  // Check if user can create this role
+  const creatableRoles = getCreatableRoles(user.role);
+  if (!creatableRoles.includes(validatedData.role)) {
+    return Response.json(
+      { error: `You cannot create users with role ${validatedData.role}` },
+      { status: 403 }
+    );
+  }
 
   const existingUser = await User.findOne({
     email: validatedData.email,
@@ -66,11 +89,51 @@ async function handlePost(req: NextRequest, user: any) {
     );
   }
 
+  // Validate hierarchy if reportingTo is provided
+  let reportingToId = validatedData.reportingTo || null;
+  if (reportingToId) {
+    // Check if the creator can manage the reportingTo user
+    const canManage = await canManageUser(user._id.toString(), reportingToId);
+    if (!canManage && user.role !== UserRole.ADMIN) {
+      return Response.json(
+        { error: "You cannot assign this manager" },
+        { status: 403 }
+      );
+    }
+  } else {
+    // If no reportingTo provided, set it based on role
+    // For non-admin roles, they should report to the creator if creator is appropriate role
+    if (validatedData.role !== UserRole.ADMIN) {
+      const creator = await User.findById(user._id);
+      if (creator) {
+        const expectedReportingRole = getReportingRole(validatedData.role);
+        // If creator's role matches the expected reporting role, set as reportingTo
+        if (expectedReportingRole && creator.role === expectedReportingRole) {
+          reportingToId = creator._id.toString();
+        }
+      }
+    }
+  }
+
+  // Validate the hierarchy structure
+  const hierarchyValidation = await validateHierarchy(
+    validatedData.role,
+    reportingToId,
+    null // new user, no userId yet
+  );
+  if (!hierarchyValidation.valid) {
+    return Response.json(
+      { error: hierarchyValidation.error },
+      { status: 400 }
+    );
+  }
+
   const hashedPassword = await bcrypt.hash(validatedData.password, 10);
 
   const newUser = await User.create({
     ...validatedData,
     password: hashedPassword,
+    reportingTo: reportingToId || undefined,
     createdBy: user._id,
   });
 
@@ -83,6 +146,7 @@ async function handlePost(req: NextRequest, user: any) {
         email: newUser.email,
         role: newUser.role,
         isActive: newUser.isActive,
+        reportingTo: newUser.reportingTo?.toString() || null,
       },
     },
     { status: 201 }
@@ -90,4 +154,7 @@ async function handlePost(req: NextRequest, user: any) {
 }
 
 export const GET = requireAuth(handleGet);
-export const POST = requireRole([UserRole.ADMIN], handlePost);
+export const POST = requireRole(
+  [UserRole.ADMIN, UserRole.MANAGER, UserRole.TEAM_LEADER],
+  handlePost
+);

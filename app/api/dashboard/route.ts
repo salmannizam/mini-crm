@@ -4,12 +4,20 @@ import Lead from "@/models/Lead";
 import User from "@/models/User";
 import { requireAuth } from "@/lib/auth";
 import { UserRole, LeadStatus } from "@/lib/constants";
+import { getManageableUsers, getAssignableUserIds } from "@/lib/hierarchy";
 import dayjs from "dayjs";
+import mongoose from "mongoose";
 
 async function handleGet(req: NextRequest, user: any) {
   await connectDB();
 
-  if (user.role === UserRole.ADMIN) {
+  if (user.role === UserRole.ADMIN || user.role === UserRole.MANAGER || user.role === UserRole.TEAM_LEADER) {
+    // Admin, Manager, and TL see team-wide stats
+    const assignableUserIds = await getAssignableUserIds(user._id.toString());
+    const assignableObjectIds = assignableUserIds.map(id => new mongoose.Types.ObjectId(id));
+    
+    const manageableUsers = await getManageableUsers(user._id.toString());
+    
     const [
       totalLeads,
       leadsByStatus,
@@ -18,13 +26,26 @@ async function handleGet(req: NextRequest, user: any) {
       inactiveUsers,
       recentActivity,
     ] = await Promise.all([
-      Lead.countDocuments({ isDeleted: false }),
+      Lead.countDocuments({ 
+        assignedUser: { $in: assignableObjectIds },
+        isDeleted: false 
+      }),
       Lead.aggregate([
-        { $match: { isDeleted: false } },
+        { 
+          $match: { 
+            assignedUser: { $in: assignableObjectIds },
+            isDeleted: false 
+          } 
+        },
         { $group: { _id: "$status", count: { $sum: 1 } } },
       ]),
       Lead.aggregate([
-        { $match: { isDeleted: false } },
+        { 
+          $match: { 
+            assignedUser: { $in: assignableObjectIds },
+            isDeleted: false 
+          } 
+        },
         {
           $group: {
             _id: "$assignedUser",
@@ -49,9 +70,20 @@ async function handleGet(req: NextRequest, user: any) {
           },
         },
       ]),
-      User.countDocuments({ isDeleted: false, isActive: true }),
-      User.countDocuments({ isDeleted: false, isActive: false }),
-      Lead.find({ isDeleted: false })
+      User.countDocuments({ 
+        _id: { $in: assignableObjectIds },
+        isDeleted: false, 
+        isActive: true 
+      }),
+      User.countDocuments({ 
+        _id: { $in: assignableObjectIds },
+        isDeleted: false, 
+        isActive: false 
+      }),
+      Lead.find({ 
+        assignedUser: { $in: assignableObjectIds },
+        isDeleted: false 
+      })
         .populate("assignedUser", "name email")
         .populate("createdBy", "name email")
         .sort({ updatedAt: -1 })
@@ -72,6 +104,12 @@ async function handleGet(req: NextRequest, user: any) {
       activeUsers,
       inactiveUsers,
       recentActivity,
+      teamUsers: manageableUsers.map((u: any) => ({
+        id: u._id.toString(),
+        name: u.name,
+        email: u.email,
+        role: u.role,
+      })),
     });
   } else {
     const today = dayjs().startOf("day").toDate();

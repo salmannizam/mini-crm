@@ -28,21 +28,21 @@ export function Sidebar({ userRole, userName }: SidebarProps) {
       title: "Dashboard",
       href: "/dashboard",
       icon: LayoutDashboard,
-      roles: [UserRole.ADMIN, UserRole.USER],
+      roles: [UserRole.ADMIN, UserRole.MANAGER, UserRole.TEAM_LEADER, UserRole.USER],
     },
     {
       title: "Leads",
       href: "/leads",
       icon: FileText,
-      roles: [UserRole.ADMIN, UserRole.USER],
+      roles: [UserRole.ADMIN, UserRole.MANAGER, UserRole.TEAM_LEADER, UserRole.USER],
     },
-    ...(userRole === UserRole.ADMIN
+    ...([UserRole.ADMIN, UserRole.MANAGER, UserRole.TEAM_LEADER].includes(userRole as UserRole)
       ? [
           {
             title: "Users",
             href: "/users",
             icon: Users,
-            roles: [UserRole.ADMIN],
+            roles: [UserRole.ADMIN, UserRole.MANAGER, UserRole.TEAM_LEADER],
           },
         ]
       : []),
