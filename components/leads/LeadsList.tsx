@@ -61,7 +61,7 @@ export function LeadsList({ userRole, userId }: LeadsListProps) {
     });
     if (search) params.append("search", search);
     if (statusFilter) params.append("status", statusFilter);
-    if (assignedUserFilter && [UserRole.ADMIN, UserRole.MANAGER, UserRole.TEAM_LEADER].includes(userRole as UserRole)) {
+    if (assignedUserFilter) {
       params.append("assignedUser", assignedUserFilter);
     }
 
@@ -103,7 +103,7 @@ export function LeadsList({ userRole, userId }: LeadsListProps) {
                 </option>
               ))}
             </Select>
-            {userRole === UserRole.ADMIN && (
+            {[UserRole.ADMIN, UserRole.MANAGER, UserRole.TEAM_LEADER].includes(userRole as UserRole) && (
               <Select
                 value={assignedUserFilter}
                 onChange={(e) => {
@@ -111,7 +111,7 @@ export function LeadsList({ userRole, userId }: LeadsListProps) {
                   setPage(1);
                 }}
               >
-                <option value="">All Users</option>
+                <option value="">All {userRole === UserRole.ADMIN ? "Users" : "Team Members"}</option>
                 {users.map((user) => (
                   <option key={user.id} value={user.id}>
                     {user.name}

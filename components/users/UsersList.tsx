@@ -178,14 +178,21 @@ export function UsersList() {
 
   return (
     <div className="space-y-4">
-      {currentUserRole === UserRole.ADMIN && (
-        <div className="flex justify-end">
+      <div className="flex justify-between items-center">
+        <h2 className="text-xl font-semibold text-gray-900 dark:text-gray-100">
+          {currentUserRole === UserRole.ADMIN 
+            ? "All Users" 
+            : currentUserRole === UserRole.MANAGER 
+            ? "My Team (Managers & Team Leaders)" 
+            : "My Team (Users)"}
+        </h2>
+        {currentUserRole === UserRole.ADMIN && (
           <Button onClick={() => setCreateDialogOpen(true)}>
             <Plus className="mr-2 h-4 w-4" />
             Create User
           </Button>
-        </div>
-      )}
+        )}
+      </div>
 
       {loading ? (
         <div className="text-center py-8 text-gray-500 dark:text-gray-400">Loading...</div>
@@ -202,7 +209,9 @@ export function UsersList() {
                     <th className="px-4 py-3 text-left text-sm font-semibold text-gray-900 dark:text-gray-100">Reports To</th>
                     <th className="px-4 py-3 text-left text-sm font-semibold text-gray-900 dark:text-gray-100">Status</th>
                     <th className="px-4 py-3 text-left text-sm font-semibold text-gray-900 dark:text-gray-100">Leads</th>
-                    <th className="px-4 py-3 text-left text-sm font-semibold text-gray-900 dark:text-gray-100">Actions</th>
+                    {currentUserRole === UserRole.ADMIN && (
+                      <th className="px-4 py-3 text-left text-sm font-semibold text-gray-900 dark:text-gray-100">Actions</th>
+                    )}
                   </tr>
                 </thead>
                 <tbody>

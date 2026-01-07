@@ -13,7 +13,8 @@ export default async function UsersPage() {
     redirect("/login");
   }
 
-  if (user.role !== UserRole.ADMIN) {
+  // Admin, Manager, and TL can view users (but only Admin can create)
+  if (![UserRole.ADMIN, UserRole.MANAGER, UserRole.TEAM_LEADER].includes(user.role as UserRole)) {
     redirect("/dashboard");
   }
 
