@@ -61,6 +61,7 @@ export enum LeadStatus {
   NEW = "new",
   CONTACTED = "contacted",
   FOLLOW_UP = "follow-up",
+  NO_RESPONSE = "no-response",
   CONVERTED = "converted",
   LOST = "lost",
 }
@@ -71,9 +72,10 @@ export enum LeadSource {
 }
 
 export const STATUS_COLORS: Record<LeadStatus, string> = {
-  [LeadStatus.NEW]: "bg-blue-100 text-blue-800",
-  [LeadStatus.CONTACTED]: "bg-yellow-100 text-yellow-800",
-  [LeadStatus.FOLLOW_UP]: "bg-purple-100 text-purple-800",
-  [LeadStatus.CONVERTED]: "bg-green-100 text-green-800",
-  [LeadStatus.LOST]: "bg-red-100 text-red-800",
+  [LeadStatus.NEW]: "bg-blue-100 text-blue-800 dark:bg-blue-900/50 dark:text-blue-300",
+  [LeadStatus.CONTACTED]: "bg-yellow-100 text-yellow-800 dark:bg-yellow-900/50 dark:text-yellow-300",
+  [LeadStatus.FOLLOW_UP]: "bg-purple-100 text-purple-800 dark:bg-purple-900/50 dark:text-purple-300",
+  [LeadStatus.NO_RESPONSE]: "bg-orange-100 text-orange-800 dark:bg-orange-900/50 dark:text-orange-300",
+  [LeadStatus.CONVERTED]: "bg-green-100 text-green-800 dark:bg-green-900/50 dark:text-green-300",
+  [LeadStatus.LOST]: "bg-red-100 text-red-800 dark:bg-red-900/50 dark:text-red-300",
 };

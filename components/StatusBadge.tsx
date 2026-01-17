@@ -8,16 +8,17 @@ interface StatusBadgeProps {
 }
 
 export function StatusBadge({ status, className }: StatusBadgeProps) {
-  const colorMap: Record<LeadStatus, "blue" | "yellow" | "purple" | "green" | "red"> = {
+  const colorMap: Record<LeadStatus, "blue" | "yellow" | "purple" | "orange" | "green" | "red"> = {
     [LeadStatus.NEW]: "blue",
     [LeadStatus.CONTACTED]: "yellow",
     [LeadStatus.FOLLOW_UP]: "purple",
+    [LeadStatus.NO_RESPONSE]: "orange",
     [LeadStatus.CONVERTED]: "green",
     [LeadStatus.LOST]: "red",
   };
 
   return (
-    <Badge variant={colorMap[status]} className={className}>
+    <Badge variant={colorMap[status] || "default"} className={className}>
       {status.charAt(0).toUpperCase() + status.slice(1).replace("-", " ")}
     </Badge>
   );
