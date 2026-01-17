@@ -236,10 +236,8 @@ async function handlePost(req: NextRequest, user: any) {
     ...validatedData,
     assignedUser: assignedUserId,
     createdBy: user._id,
-    source:
-      user.role === UserRole.ADMIN
-        ? validatedData.source || LeadSource.ADMIN_ASSIGNED
-        : LeadSource.MANUAL,
+    source: validatedData.source || LeadSource.OTHER,
+    businessType: validatedData.businessType || undefined,
     status: validatedData.status || LeadStatus.NEW,
   };
 

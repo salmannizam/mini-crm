@@ -15,7 +15,7 @@ interface Lead {
   _id: string;
   name: string;
   email: string;
-  phone: string;
+  phone?: string;
   status: LeadStatus;
   assignedUser: { name: string; email: string };
   createdAt: string;
@@ -270,7 +270,7 @@ export function LeadsList({ userRole, userId }: LeadsListProps) {
                       {lead.email}
                     </td>
                     <td className="px-3 sm:px-4 py-3 text-sm text-gray-600 dark:text-gray-300 hidden md:table-cell">
-                      {lead.phone}
+                      {lead.phone || "N/A"}
                     </td>
                     <td className="px-3 sm:px-4 py-3">
                       <StatusBadge status={lead.status} />

@@ -67,6 +67,8 @@ async function handlePatch(
   const oldEmail = lead.email;
   const oldPhone = lead.phone;
   const oldAddress = lead.address;
+  const oldSource = lead.source;
+  const oldBusinessType = lead.businessType;
 
   // Track field changes with metadata
   if (validatedData.status && validatedData.status !== oldStatus) {
@@ -139,7 +141,7 @@ async function handlePatch(
     });
   }
 
-  if (validatedData.phone && validatedData.phone !== oldPhone) {
+  if (validatedData.phone !== undefined && validatedData.phone !== oldPhone) {
     lead.activityLogs.push({
       action: "updated",
       description: `Phone updated by ${user.name}`,
@@ -148,8 +150,8 @@ async function handlePatch(
       createdAt: new Date(),
       metadata: {
         field: "phone",
-        oldValue: oldPhone,
-        newValue: validatedData.phone,
+        oldValue: oldPhone || "N/A",
+        newValue: validatedData.phone || "N/A",
       },
     });
   }
@@ -169,10 +171,45 @@ async function handlePatch(
     });
   }
 
+  if (validatedData.source && validatedData.source !== oldSource) {
+    lead.activityLogs.push({
+      action: "updated",
+      description: `Source updated by ${user.name}`,
+      performedBy: user._id,
+      performedByName: user.name,
+      createdAt: new Date(),
+      metadata: {
+        field: "source",
+        oldValue: oldSource,
+        newValue: validatedData.source,
+      },
+    });
+  }
+
+  if (validatedData.businessType !== undefined && validatedData.businessType !== oldBusinessType) {
+    lead.activityLogs.push({
+      action: "updated",
+      description: `Business type updated by ${user.name}`,
+      performedBy: user._id,
+      performedByName: user.name,
+      createdAt: new Date(),
+      metadata: {
+        field: "businessType",
+        oldValue: oldBusinessType || "N/A",
+        newValue: validatedData.businessType || "N/A",
+      },
+    });
+  }
+
   // Convert assignedUser string to ObjectId if provided
   const updateData: any = { ...validatedData };
   if (updateData.assignedUser) {
     updateData.assignedUser = new mongoose.Types.ObjectId(updateData.assignedUser);
+  }
+
+  // Handle empty phone string - convert to undefined
+  if (updateData.phone === "") {
+    updateData.phone = undefined;
   }
 
   Object.assign(lead, updateData);

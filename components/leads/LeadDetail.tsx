@@ -10,7 +10,7 @@ import { Label } from "@/components/ui/label";
 import { Select } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import { StatusBadge } from "@/components/StatusBadge";
-import { LeadStatus, UserRole, LeadSource } from "@/lib/constants";
+import { LeadStatus, UserRole, LeadSource, BusinessType } from "@/lib/constants";
 import { useToast } from "@/components/ui/toast";
 import { ActivityTimeline } from "./ActivityTimeline";
 import dayjs from "dayjs";
@@ -25,9 +25,10 @@ interface Lead {
   _id: string;
   name: string;
   email: string;
-  phone: string;
+  phone?: string;
   address: string;
   source: LeadSource;
+  businessType?: BusinessType;
   status: LeadStatus;
   assignedUser: { _id: string; name: string; email: string };
   createdBy: { name: string; email: string };
@@ -241,8 +242,7 @@ export function LeadDetail({ leadId, userRole, userId }: LeadDetailProps) {
                       <Input
                         id="phone"
                         name="phone"
-                        defaultValue={lead.phone}
-                        required
+                        defaultValue={lead.phone || ""}
                       />
                     </div>
                     <div>
@@ -269,6 +269,37 @@ export function LeadDetail({ leadId, userRole, userId }: LeadDetailProps) {
                       defaultValue={lead.address}
                       required
                     />
+                  </div>
+                  <div className="grid gap-4 md:grid-cols-2">
+                    <div>
+                      <Label htmlFor="source">Source</Label>
+                      <Select
+                        id="source"
+                        name="source"
+                        defaultValue={lead.source}
+                      >
+                        {Object.values(LeadSource).map((source) => (
+                          <option key={source} value={source}>
+                            {source.charAt(0).toUpperCase() + source.slice(1).replace("-", " ")}
+                          </option>
+                        ))}
+                      </Select>
+                    </div>
+                    <div>
+                      <Label htmlFor="businessType">Business Type</Label>
+                      <Select
+                        id="businessType"
+                        name="businessType"
+                        defaultValue={lead.businessType || ""}
+                      >
+                        <option value="">Select business type</option>
+                        {Object.values(BusinessType).map((type) => (
+                          <option key={type} value={type}>
+                            {type.charAt(0).toUpperCase() + type.slice(1).replace("-", " ")}
+                          </option>
+                        ))}
+                      </Select>
+                    </div>
                   </div>
                   {userRole === UserRole.ADMIN && (
                     <div>
@@ -302,7 +333,7 @@ export function LeadDetail({ leadId, userRole, userId }: LeadDetailProps) {
                     </div>
                     <div>
                       <Label>Phone</Label>
-                      <p className="text-sm font-medium">{lead.phone}</p>
+                      <p className="text-sm font-medium">{lead.phone || "N/A"}</p>
                     </div>
                     <div>
                       <Label>Status</Label>
@@ -315,10 +346,22 @@ export function LeadDetail({ leadId, userRole, userId }: LeadDetailProps) {
                       <p className="text-sm font-medium">{lead.assignedUser.name}</p>
                     </div>
                     <div>
-                      <Label>Source</Label>
-                      <p className="text-sm font-medium capitalize">
-                        {lead.source.replace("-", " ")}
-                      </p>
+                      <div className="grid gap-4 md:grid-cols-2">
+                        <div>
+                          <Label>Source</Label>
+                          <p className="text-sm font-medium capitalize">
+                            {lead.source.replace("-", " ")}
+                          </p>
+                        </div>
+                        {lead.businessType && (
+                          <div>
+                            <Label>Business Type</Label>
+                            <p className="text-sm font-medium capitalize">
+                              {lead.businessType.replace("-", " ")}
+                            </p>
+                          </div>
+                        )}
+                      </div>
                     </div>
                   </div>
                   <div>

@@ -8,7 +8,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select } from "@/components/ui/select";
-import { LeadStatus, UserRole, LeadSource } from "@/lib/constants";
+import { LeadStatus, UserRole, LeadSource, BusinessType } from "@/lib/constants";
 import { useToast } from "@/components/ui/toast";
 
 interface CreateLeadFormProps {
@@ -103,8 +103,8 @@ export function CreateLeadForm({ userRole, userId }: CreateLeadFormProps) {
               <Input id="email" name="email" type="email" />
             </div>
             <div>
-              <Label htmlFor="phone">Phone *</Label>
-              <Input id="phone" name="phone" required />
+              <Label htmlFor="phone">Phone</Label>
+              <Input id="phone" name="phone" />
             </div>
             <div>
               <Label htmlFor="status">Status</Label>
@@ -134,10 +134,10 @@ export function CreateLeadForm({ userRole, userId }: CreateLeadFormProps) {
               </Select>
             </div>
           )}
-          {userRole === UserRole.ADMIN && (
+          <div className="grid gap-4 md:grid-cols-2">
             <div>
               <Label htmlFor="source">Source</Label>
-              <Select id="source" name="source" defaultValue={LeadSource.ADMIN_ASSIGNED}>
+              <Select id="source" name="source" defaultValue={LeadSource.OTHER}>
                 {Object.values(LeadSource).map((source) => (
                   <option key={source} value={source}>
                     {source.charAt(0).toUpperCase() + source.slice(1).replace("-", " ")}
@@ -145,7 +145,18 @@ export function CreateLeadForm({ userRole, userId }: CreateLeadFormProps) {
                 ))}
               </Select>
             </div>
-          )}
+            <div>
+              <Label htmlFor="businessType">Business Type</Label>
+              <Select id="businessType" name="businessType">
+                <option value="">Select business type</option>
+                {Object.values(BusinessType).map((type) => (
+                  <option key={type} value={type}>
+                    {type.charAt(0).toUpperCase() + type.slice(1).replace("-", " ")}
+                  </option>
+                ))}
+              </Select>
+            </div>
+          </div>
           <div className="flex gap-4">
             <Button type="submit" disabled={loading}>
               {loading ? "Creating..." : "Create Lead"}

@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { UserRole, LeadStatus, LeadSource } from "@/lib/constants";
+import { UserRole, LeadStatus, LeadSource, BusinessType } from "@/lib/constants";
 
 export const loginSchema = z.object({
   email: z.string().email("Invalid email address"),
@@ -45,6 +45,10 @@ export const createLeadSchema = z.preprocess(
       if (data.email === "") {
         processed.email = undefined;
       }
+      // Convert empty string to undefined for phone
+      if (data.phone === "") {
+        processed.phone = undefined;
+      }
       return processed;
     }
     return data;
@@ -55,9 +59,10 @@ export const createLeadSchema = z.preprocess(
       .string()
       .email("Invalid email address")
       .optional(),
-    phone: z.string().min(1, "Phone is required"),
+    phone: z.string().optional(),
     address: z.string().min(1, "Address is required"),
     source: z.nativeEnum(LeadSource).optional(),
+    businessType: z.nativeEnum(BusinessType).optional(),
     status: z.nativeEnum(LeadStatus).optional(),
     assignedUser: z
       .string()
@@ -69,8 +74,10 @@ export const createLeadSchema = z.preprocess(
 export const updateLeadSchema = z.object({
   name: z.string().min(1, "Name is required").optional(),
   email: z.string().email("Invalid email address").optional(),
-  phone: z.string().min(1, "Phone is required").optional(),
+  phone: z.string().optional(),
   address: z.string().min(1, "Address is required").optional(),
+  source: z.nativeEnum(LeadSource).optional(),
+  businessType: z.nativeEnum(BusinessType).optional(),
   status: z.nativeEnum(LeadStatus).optional(),
   assignedUser: z
     .string()

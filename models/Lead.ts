@@ -1,5 +1,5 @@
 import mongoose, { Schema, Document, Model } from "mongoose";
-import { LeadStatus, LeadSource } from "@/lib/constants";
+import { LeadStatus, LeadSource, BusinessType } from "@/lib/constants";
 
 export interface IFollowUp {
   date: Date;
@@ -38,9 +38,10 @@ export interface IActivityLog {
 export interface ILead extends Document {
   name: string;
   email?: string;
-  phone: string;
+  phone?: string;
   address: string;
   source: LeadSource;
+  businessType?: BusinessType;
   status: LeadStatus;
   assignedUser: mongoose.Types.ObjectId;
   createdBy: mongoose.Types.ObjectId;
@@ -161,7 +162,7 @@ const LeadSchema: Schema = new Schema(
     },
     phone: {
       type: String,
-      required: true,
+      required: false,
       trim: true,
     },
     address: {
@@ -172,7 +173,12 @@ const LeadSchema: Schema = new Schema(
     source: {
       type: String,
       enum: Object.values(LeadSource),
-      default: LeadSource.MANUAL,
+      default: LeadSource.OTHER,
+    },
+    businessType: {
+      type: String,
+      enum: Object.values(BusinessType),
+      required: false,
     },
     status: {
       type: String,
