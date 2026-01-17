@@ -5,6 +5,7 @@ import Lead from "@/models/Lead";
 import { updateLeadSchema } from "@/lib/validations";
 import { requireAuth } from "@/lib/auth";
 import { UserRole } from "@/lib/constants";
+import { getAssignableUserIds } from "@/lib/hierarchy";
 
 async function handleGet(
   req: NextRequest,
@@ -18,8 +19,16 @@ async function handleGet(
     isDeleted: false,
   };
 
-  if (user.role !== UserRole.ADMIN) {
+  // Determine access based on role
+  if (user.role === UserRole.USER) {
+    // Users can only see their own leads
     query.assignedUser = user._id;
+  } else if (user.role === UserRole.ADMIN) {
+    // Admin can see all leads - no restriction
+  } else {
+    // Manager and TL can see leads assigned to their team
+    const assignableUserIds = await getAssignableUserIds(user._id.toString());
+    query.assignedUser = { $in: assignableUserIds.map(id => new mongoose.Types.ObjectId(id)) };
   }
 
   const lead = await Lead.findOne(query)
@@ -51,8 +60,16 @@ async function handlePatch(
     isDeleted: false,
   };
 
-  if (user.role !== UserRole.ADMIN) {
+  // Determine access based on role
+  if (user.role === UserRole.USER) {
+    // Users can only edit their own leads
     query.assignedUser = user._id;
+  } else if (user.role === UserRole.ADMIN) {
+    // Admin can edit all leads - no restriction
+  } else {
+    // Manager and TL can edit leads assigned to their team
+    const assignableUserIds = await getAssignableUserIds(user._id.toString());
+    query.assignedUser = { $in: assignableUserIds.map(id => new mongoose.Types.ObjectId(id)) };
   }
 
   const lead = await Lead.findOne(query);
@@ -241,8 +258,9 @@ async function handleDelete(
     isDeleted: false,
   };
 
+  // Only Admin can delete leads
   if (user.role !== UserRole.ADMIN) {
-    query.assignedUser = user._id;
+    return Response.json({ error: "Forbidden" }, { status: 403 });
   }
 
   const lead = await Lead.findOne(query);

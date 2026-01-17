@@ -4,6 +4,8 @@ import Lead from "@/models/Lead";
 import { addCommentSchema } from "@/lib/validations";
 import { requireAuth } from "@/lib/auth";
 import { UserRole } from "@/lib/constants";
+import { getAssignableUserIds } from "@/lib/hierarchy";
+import mongoose from "mongoose";
 
 async function handlePost(
   req: NextRequest,
@@ -20,8 +22,16 @@ async function handlePost(
     isDeleted: false,
   };
 
-  if (user.role !== UserRole.ADMIN) {
+  // Determine access based on role
+  if (user.role === UserRole.USER) {
+    // Users can only comment on their own leads
     query.assignedUser = user._id;
+  } else if (user.role === UserRole.ADMIN) {
+    // Admin can comment on all leads - no restriction
+  } else {
+    // Manager and TL can comment on leads assigned to their team
+    const assignableUserIds = await getAssignableUserIds(user._id.toString());
+    query.assignedUser = { $in: assignableUserIds.map(id => new mongoose.Types.ObjectId(id)) };
   }
 
   const lead = await Lead.findOne(query);
