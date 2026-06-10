@@ -78,7 +78,7 @@ export enum LeadSource {
   OFFLINE_WALKIN = "offline-walkin",
   TELECALLING = "telecalling",
   GOOGLE_SEARCH = "google-search",
-  REFERRAL_FRIEND = "referral-friend",
+  REFERRAL = "referral",
   GOOGLE_ADS = "google-ads",
   WEBSITE = "website",
   WHATSAPP = "whatsapp",
@@ -105,9 +105,6 @@ export enum BusinessType {
   RESTAURANT_CAFE = "restaurant-cafe",
   HOTEL_HOSPITALITY = "hotel-hospitality",
   LOGISTICS_TRANSPORT = "logistics-transport",
-  NGO = "ngo",
-  FREELANCER = "freelancer",
-  STARTUP = "startup",
   CORPORATE_ENTERPRISE = "corporate-enterprise",
   OTHER = "other",
 }

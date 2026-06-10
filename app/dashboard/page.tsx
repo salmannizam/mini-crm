@@ -15,11 +15,12 @@ export default async function DashboardPage() {
   }
 
   return (
-    <AppLayout>
+    <AppLayout >
       <div className="flex h-screen bg-gray-50 dark:bg-gray-950">
         <Sidebar userRole={user.role} userName={user.name} />
         <div className="flex-1 flex flex-col overflow-hidden lg:ml-0">
           <TopBar title="Dashboard" />
+     
           <main className="flex-1 overflow-y-auto p-4 sm:p-6 bg-gray-50 dark:bg-gray-950">
             {user.role === UserRole.ADMIN || 
              user.role === UserRole.MANAGER || 
