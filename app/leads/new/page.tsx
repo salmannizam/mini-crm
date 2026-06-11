@@ -4,12 +4,18 @@ import { Sidebar } from "@/components/layout/Sidebar";
 import { TopBar } from "@/components/layout/TopBar";
 import { CreateLeadForm } from "@/components/leads/CreateLeadForm";
 import { AppLayout } from "@/components/layout/AppLayout";
+import { UserRole } from "@/lib/constants";
 
 export default async function NewLeadPage() {
   const user = await getCurrentUserServer();
 
   if (!user) {
     redirect("/login");
+  }
+
+  // Only admin can access create lead page
+  if (user.role !== UserRole.ADMIN) {
+    redirect("/leads");
   }
 
   return (

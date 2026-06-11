@@ -95,9 +95,9 @@ export async function canAssignToUser(
   // Admin can assign to anyone
   if (assigner.role === UserRole.ADMIN) return true;
 
-  // Check if target is in manageable users
-  const assignableIds = await getAssignableUserIds(assignerId);
-  return assignableIds.includes(targetUserId);
+  // Employees can only assign to themselves
+  if (assignerId === targetUserId) return true;
+  return false;
 }
 
 /**
@@ -144,7 +144,7 @@ export async function validateHierarchy(
   if (!reportingToId) {
     // Only admin can have no reportingTo
     if (userRole !== UserRole.ADMIN) {
-      return { valid: false, error: "User must have a manager" };
+      return { valid: false, error: "Employee must have a manager" };
     }
     return { valid: true };
   }

@@ -25,8 +25,8 @@ async function handleGet(req: NextRequest, user: any) {
     // Admin sees all leads
     const allLeads = await Lead.find({ isDeleted: false }).select("_id");
     userScope = allLeads.map((l) => l._id);
-  } else if (user.role === UserRole.USER) {
-    // Users see only their own leads
+  } else if (user.role === UserRole.EMPLOYEE) {
+    // Employees see only their own leads
     const userLeads = await Lead.find({
       assignedUser: user._id,
       isDeleted: false,

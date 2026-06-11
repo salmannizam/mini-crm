@@ -35,10 +35,10 @@ export function UsersList() {
     name: "",
     email: "",
     password: "",
-    role: UserRole.USER,
+    role: UserRole.EMPLOYEE,
     reportingTo: "",
   });
-  const [currentUserRole, setCurrentUserRole] = useState<UserRole>(UserRole.USER);
+  const [currentUserRole, setCurrentUserRole] = useState<UserRole>(UserRole.EMPLOYEE);
   const [availableManagers, setAvailableManagers] = useState<Array<{ id: string; name: string; role: UserRole }>>([]);
 
   useEffect(() => {
@@ -94,7 +94,7 @@ export function UsersList() {
     if (res.ok) {
       addToast({ title: "Success", description: "User created successfully", variant: "success" });
       setCreateDialogOpen(false);
-      setFormData({ name: "", email: "", password: "", role: UserRole.USER, reportingTo: "" });
+      setFormData({ name: "", email: "", password: "", role: UserRole.EMPLOYEE, reportingTo: "" });
       fetchUsers();
     } else {
       const error = await res.json();
@@ -180,11 +180,9 @@ export function UsersList() {
     <div className="space-y-4">
       <div className="flex justify-between items-center">
         <h2 className="text-xl font-semibold text-gray-900 dark:text-gray-100">
-          {currentUserRole === UserRole.ADMIN 
-            ? "All Users" 
-            : currentUserRole === UserRole.MANAGER 
-            ? "My Team (Managers & Team Leaders)" 
-            : "My Team (Users)"}
+          
+             All Users
+            
         </h2>
         {currentUserRole === UserRole.ADMIN && (
           <Button onClick={() => setCreateDialogOpen(true)}>

@@ -77,6 +77,7 @@ export function LeadDetail({ leadId, userRole, userId }: LeadDetailProps) {
   const [isRecurring, setIsRecurring] = useState(false);
   const [recurringInterval, setRecurringInterval] = useState<"daily" | "weekly" | "monthly">("weekly");
   const [recurringEndDate, setRecurringEndDate] = useState("");
+  const [converting, setConverting] = useState(false);
 
   useEffect(() => {
     fetchLead();
@@ -179,6 +180,29 @@ export function LeadDetail({ leadId, userRole, userId }: LeadDetailProps) {
     }
   };
 
+  const handleConvertToCustomer = async () => {
+    if (!lead) return;
+    
+    setConverting(true);
+    try {
+      const res = await fetch(`/api/leads/${leadId}/convert-to-customer`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+      });
+
+      if (res.ok) {
+        const data = await res.json();
+        addToast({ title: "Success", description: "Lead converted to customer successfully", variant: "success" });
+        router.push(`/customers/${data.customer._id}`);
+      } else {
+        const error = await res.json();
+        addToast({ title: "Error", description: error.error || "Failed to convert lead to customer", variant: "error" });
+      }
+    } finally {
+      setConverting(false);
+    }
+  };
+
   if (loading) {
     return <div>Loading...</div>;
   }
@@ -204,14 +228,25 @@ export function LeadDetail({ leadId, userRole, userId }: LeadDetailProps) {
             <CardHeader>
               <div className="flex items-center justify-between">
                 <CardTitle>Lead Information</CardTitle>
-                {canEdit && (
-                  <Button
-                    variant="outline"
-                    onClick={() => setEditing(!editing)}
-                  >
-                    {editing ? "Cancel" : "Edit"}
-                  </Button>
-                )}
+                <div className="flex gap-2">
+                  {lead.status !== LeadStatus.CONVERTED && canEdit && (
+                    <Button
+                      onClick={handleConvertToCustomer}
+                      disabled={converting}
+                      variant="secondary"
+                    >
+                      {converting ? "Converting..." : "Convert to Customer"}
+                    </Button>
+                  )}
+                  {canEdit && (
+                    <Button
+                      variant="outline"
+                      onClick={() => setEditing(!editing)}
+                    >
+                      {editing ? "Cancel" : "Edit"}
+                    </Button>
+                  )}
+                </div>
               </div>
             </CardHeader>
             <CardContent>

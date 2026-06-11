@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import bcrypt from "bcryptjs";
 import connectDB from "@/lib/db";
 import User from "@/models/User";
+import { Activity } from "@/models/Activity";
 import { loginSchema } from "@/lib/validations";
 import { generateToken } from "@/lib/auth";
 
@@ -44,6 +45,17 @@ export async function POST(request: NextRequest) {
     }
 
     const token = await generateToken(user);
+
+    // Track login activity
+    const ipAddress = request.headers.get("x-forwarded-for")|| "unknown";
+    const userAgent = request.headers.get("user-agent") || "unknown";
+    
+    await Activity.create({
+      user: user._id,
+      action: "login",
+      ipAddress,
+      userAgent,
+    });
 
     const response = NextResponse.json({
       success: true,

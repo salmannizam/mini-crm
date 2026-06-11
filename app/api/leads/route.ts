@@ -37,26 +37,11 @@ async function handleGet(req: NextRequest, user: any) {
   const query: any = { isDeleted: false };
 
   // Determine which leads the user can see based on role
-  let userScope: mongoose.Types.ObjectId[] = [];
-  
-  if (user.role === UserRole.USER) {
-    // Users can only see their own leads
-    userScope = [user._id];
-  } else if (user.role === UserRole.ADMIN) {
-    // Admin can see all leads
-    // No restriction needed
-  } else {
-    // Manager and TL can see leads assigned to their team
-    const assignableUserIds = await getAssignableUserIds(user._id.toString());
-    userScope = assignableUserIds.map(id => new mongoose.Types.ObjectId(id));
-  }
-
-  // Apply user scope restriction
-  if (user.role === UserRole.USER) {
+  if (user.role === UserRole.EMPLOYEE) {
+    // Employees can only see their own leads
     query.assignedUser = user._id;
-  } else if (user.role !== UserRole.ADMIN && userScope.length > 0) {
-    query.assignedUser = { $in: userScope };
   }
+  // Admin can see all leads - no restriction needed
 
   // Advanced assigned user filter (multiple selection)
   if (assignedUsers.length > 0) {
@@ -68,7 +53,7 @@ async function handleGet(req: NextRequest, user: any) {
     if (user.role !== UserRole.ADMIN) {
       // For non-admin, validate users are in scope
       const validScopeIds = validUserIds.filter(id => 
-        userScope.some(scopeId => scopeId.equals(id))
+        canAssignToUser(user, id.toString())
       );
       if (validScopeIds.length > 0) {
         query.assignedUser = { $in: validScopeIds };
@@ -86,7 +71,7 @@ async function handleGet(req: NextRequest, user: any) {
     // Legacy single assigned user filter
     if (/^[0-9a-fA-F]{24}$/.test(assignedUser)) {
       const userId = new mongoose.Types.ObjectId(assignedUser);
-      if (user.role === UserRole.ADMIN || userScope.some(id => id.equals(userId))) {
+      if (user.role === UserRole.ADMIN) {
         query.assignedUser = userId;
       } else {
         return Response.json({
@@ -198,39 +183,41 @@ async function handlePost(req: NextRequest, user: any) {
 
   await connectDB();
 
+  // Only admin can create leads
+  if (user.role !== UserRole.ADMIN) {
+    return Response.json(
+      { error: "Only admin can create leads" },
+      { status: 403 }
+    );
+  }
+
   let assignedUserId: mongoose.Types.ObjectId;
 
-  if (user.role === UserRole.USER) {
-    // Users can only assign leads to themselves
-    assignedUserId = user._id;
-  } else {
-    // Admin, Manager, and TL can assign to others
-    if (!validatedData.assignedUser) {
-      return Response.json(
-        { error: "Assigned user is required" },
-        { status: 400 }
-      );
-    }
-    
-    // Validate ObjectId format
-    if (!/^[0-9a-fA-F]{24}$/.test(validatedData.assignedUser)) {
-      return Response.json(
-        { error: "Invalid user ID format" },
-        { status: 400 }
-      );
-    }
-
-    // Check if user can assign to this user
-    const canAssign = await canAssignToUser(user._id.toString(), validatedData.assignedUser);
-    if (!canAssign) {
-      return Response.json(
-        { error: "You cannot assign leads to this user" },
-        { status: 403 }
-      );
-    }
-
-    assignedUserId = new mongoose.Types.ObjectId(validatedData.assignedUser);
+  if (!validatedData.assignedUser) {
+    return Response.json(
+      { error: "Assigned user is required" },
+      { status: 400 }
+    );
   }
+  
+  // Validate ObjectId format
+  if (!/^[0-9a-fA-F]{24}$/.test(validatedData.assignedUser)) {
+    return Response.json(
+      { error: "Invalid user ID format" },
+      { status: 400 }
+    );
+  }
+
+  // Check if user can assign to this user
+  const canAssign = await canAssignToUser(user._id.toString(), validatedData.assignedUser);
+  if (!canAssign) {
+    return Response.json(
+      { error: "You cannot assign leads to this user" },
+      { status: 403 }
+    );
+  }
+
+  assignedUserId = new mongoose.Types.ObjectId(validatedData.assignedUser);
 
   const leadData: any = {
     ...validatedData,

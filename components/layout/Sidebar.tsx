@@ -6,6 +6,7 @@ import {
   LayoutDashboard,
   Users,
   FileText,
+  Building2,
   LogOut,
   User,
   X,
@@ -32,49 +33,51 @@ export function Sidebar({ userRole, userName }: SidebarProps) {
       title: "Dashboard",
       href: "/dashboard",
       icon: LayoutDashboard,
-      roles: [UserRole.ADMIN, UserRole.MANAGER, UserRole.TEAM_LEADER, UserRole.USER],
+      roles: [UserRole.ADMIN, UserRole.EMPLOYEE],
     },
     {
       title: "Leads",
       href: "/leads",
       icon: FileText,
-      roles: [UserRole.ADMIN, UserRole.MANAGER, UserRole.TEAM_LEADER, UserRole.USER],
+      roles: [UserRole.ADMIN, UserRole.EMPLOYEE],
+    },
+    {
+      title: "Customers",
+      href: "/customers",
+      icon: Building2,
+      roles: [UserRole.ADMIN, UserRole.EMPLOYEE],
     },
     {
       title: "Analytics",
       href: "/analytics",
       icon: TrendingUp,
-      roles: [UserRole.ADMIN, UserRole.MANAGER, UserRole.TEAM_LEADER, UserRole.USER],
+      roles: [UserRole.ADMIN, UserRole.EMPLOYEE],
     },
     {
       title: "Calendar",
       href: "/calendar",
       icon: Calendar,
-      roles: [UserRole.ADMIN, UserRole.MANAGER, UserRole.TEAM_LEADER, UserRole.USER],
+      roles: [UserRole.ADMIN, UserRole.EMPLOYEE],
     },
     {
       title: "Activity History",
       href: "/activity",
       icon: History,
-      roles: [UserRole.ADMIN, UserRole.MANAGER, UserRole.TEAM_LEADER, UserRole.USER],
+      roles: [UserRole.ADMIN, UserRole.EMPLOYEE],
     },
-    ...([UserRole.MANAGER, UserRole.TEAM_LEADER].includes(userRole as UserRole)
-      ? [
-          {
-            title: "Reports",
-            href: "/reports",
-            icon: BarChart3,
-            roles: [UserRole.MANAGER, UserRole.TEAM_LEADER],
-          },
-        ]
-      : []),
-    ...([UserRole.ADMIN, UserRole.MANAGER, UserRole.TEAM_LEADER].includes(userRole as UserRole)
+    ...([UserRole.ADMIN].includes(userRole as UserRole)
       ? [
           {
             title: "Users",
             href: "/users",
             icon: Users,
-            roles: [UserRole.ADMIN, UserRole.MANAGER, UserRole.TEAM_LEADER],
+            roles: [UserRole.ADMIN],
+          },
+          {
+            title: "Login History",
+            href: "/login-history",
+            icon: History,
+            roles: [UserRole.ADMIN],
           },
         ]
       : []),

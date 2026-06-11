@@ -98,3 +98,60 @@ export const addFollowUpSchema = z.object({
   recurringInterval: z.enum(["daily", "weekly", "monthly"]).optional(),
   recurringEndDate: z.string().optional(),
 });
+
+export const createCustomerSchema = z.preprocess(
+  (data: any) => {
+    if (data && typeof data === "object") {
+      const processed: any = { ...data };
+      // Convert empty string to undefined for email
+      if (data.email === "") {
+        processed.email = undefined;
+      }
+      // Convert empty string to undefined for phone
+      if (data.phone === "") {
+        processed.phone = undefined;
+      }
+      return processed;
+    }
+    return data;
+  },
+  z.object({
+    name: z.string().min(1, "Name is required"),
+    email: z.string().email("Invalid email address").optional(),
+    phone: z.string().optional(),
+    address: z.string().min(1, "Address is required"),
+    businessType: z.string().optional(),
+    assignedUser: z
+      .string()
+      .regex(/^[0-9a-fA-F]{24}$/, "Invalid user ID format")
+      .optional(),
+  })
+);
+
+export const updateCustomerSchema = z.object({
+  name: z.string().min(1, "Name is required").optional(),
+  email: z.string().email("Invalid email address").optional(),
+  phone: z.string().optional(),
+  address: z.string().min(1, "Address is required").optional(),
+  businessType: z.string().optional(),
+  assignedUser: z
+    .string()
+    .min(1, "Assigned user is required")
+    .regex(/^[0-9a-fA-F]{24}$/, "Invalid user ID format")
+    .optional(),
+});
+
+export const addNoteSchema = z.object({
+  text: z.string().min(1, "Note text is required"),
+});
+
+export const addDocumentSchema = z.object({
+  name: z.string().min(1, "Document name is required"),
+  url: z.string().url("Valid document URL is required"),
+});
+
+export const addCommunicationSchema = z.object({
+  type: z.string().min(1, "Communication type is required"),
+  notes: z.string().min(1, "Communication notes are required"),
+  date: z.string().min(1, "Communication date is required"),
+});

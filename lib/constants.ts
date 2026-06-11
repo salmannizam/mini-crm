@@ -1,27 +1,19 @@
 export enum UserRole {
   ADMIN = "admin",
-  MANAGER = "manager",
-  TEAM_LEADER = "team-leader",
-  USER = "user",
+  EMPLOYEE = "employee",
 }
 
 // Role hierarchy: higher number = higher authority
 export const ROLE_HIERARCHY: Record<UserRole, number> = {
-  [UserRole.ADMIN]: 4,
-  [UserRole.MANAGER]: 3,
-  [UserRole.TEAM_LEADER]: 2,
-  [UserRole.USER]: 1,
+  [UserRole.ADMIN]: 2,
+  [UserRole.EMPLOYEE]: 1,
 };
 
 // Get roles that can be created by a given role
 export function getCreatableRoles(role: UserRole): UserRole[] {
   switch (role) {
     case UserRole.ADMIN:
-      return [UserRole.MANAGER, UserRole.TEAM_LEADER, UserRole.USER];
-    case UserRole.MANAGER:
-      return [UserRole.TEAM_LEADER, UserRole.USER];
-    case UserRole.TEAM_LEADER:
-      return [UserRole.USER];
+      return [UserRole.EMPLOYEE];
     default:
       return [];
   }
@@ -30,11 +22,7 @@ export function getCreatableRoles(role: UserRole): UserRole[] {
 // Get the reporting role for a given role
 export function getReportingRole(role: UserRole): UserRole | null {
   switch (role) {
-    case UserRole.USER:
-      return UserRole.TEAM_LEADER;
-    case UserRole.TEAM_LEADER:
-      return UserRole.MANAGER;
-    case UserRole.MANAGER:
+    case UserRole.EMPLOYEE:
       return UserRole.ADMIN;
     default:
       return null;
@@ -46,12 +34,8 @@ export function getRoleDisplayName(role: UserRole): string {
   switch (role) {
     case UserRole.ADMIN:
       return "Admin";
-    case UserRole.MANAGER:
-      return "Manager";
-    case UserRole.TEAM_LEADER:
-      return "Team Leader";
-    case UserRole.USER:
-      return "User";
+    case UserRole.EMPLOYEE:
+      return "Employee";
     default:
       return role;
   }

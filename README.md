@@ -213,3 +213,4 @@ npm run seed
 
 This project is private and proprietary.
 # mini-crm
+# goldenvenue-crm
